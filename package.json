@@ -1,0 +1,36 @@
+{
+  "name": "amazon-location-utilities-datatypes-js",
+  "description": "Amazon Location Utilities - Data Types for JavaScript",
+  "version": "0.1.0",
+  "author": {
+    "name": "Amazon Web Services",
+    "email": "",
+    "url": "https://aws.amazon.com/"
+  },
+  "config": {
+  },
+  "homepage": "https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js",
+  "contributors": [
+    "Eason Huang <yuxuanh@amazon.com>"
+  ],
+  "devDependencies": {
+  },
+  "dependencies": {
+  },
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js"
+  },
+  "bugs": {
+    "url": "https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/issues",
+    "mail": ""
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+  ],
+  "scripts": {
+  }
+}
