@@ -1,4 +1,4 @@
-name: ci-pull
+name: build
 
 on:
   workflow_dispatch:
@@ -16,14 +16,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [ 14.x ]
-
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "18.x"
       - run: npm ci
