@@ -3,9 +3,9 @@ name: build
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 concurrency:
   # cancel jobs on PRs only
@@ -23,3 +23,6 @@ jobs:
         with:
           node-version: "18.x"
       - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test

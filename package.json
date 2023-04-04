@@ -1,25 +1,15 @@
 {
   "name": "amazon-location-utilities-datatypes-js",
   "description": "Amazon Location Utilities - Data Types for JavaScript",
+  "license": "Apache-2.0",
   "version": "0.1.0",
+  "keywords": [],
   "author": {
     "name": "Amazon Web Services",
     "email": "",
     "url": "https://aws.amazon.com/"
   },
-  "config": {
-  },
   "homepage": "https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js",
-  "contributors": [
-    "Eason Huang <yuxuanh@amazon.com>"
-  ],
-  "devDependencies": {
-  },
-  "dependencies": {
-  },
-  "engines": {
-    "node": ">= 14.0.0"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js"
@@ -28,9 +18,34 @@
     "url": "https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/issues",
     "mail": ""
   },
-  "license": "Apache-2.0",
-  "keywords": [
+  "contributors": [
+    "Eason Huang <yuxuanh@amazon.com>"
   ],
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "config": {},
   "scripts": {
+    "prettier": "prettier -w .",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "test": "jest --coverage",
+    "build:types": "tsc",
+    "build": "npm run build:types"
+  },
+  "dependencies": {
+    "@aws-sdk/client-location": "^3.0.0",
+    "@types/geojson": "^7946.0.10"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "eslint": "^8.37.0",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.7",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2"
   }
 }
