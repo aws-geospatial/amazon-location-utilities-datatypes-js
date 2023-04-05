@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { LineString, Point, Position } from "geojson";
 
 export function expectPoint(point?: Point) {

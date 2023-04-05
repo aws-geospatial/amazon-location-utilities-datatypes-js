@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import {
   AnyDevicePosition,
   convertDevicePositionsToPoints,
@@ -5,24 +8,19 @@ import {
   convertPlaceContainerToPoint,
   convertPlaceToPoint,
   convertDevicePositionToPoint,
-  convertRawPositionToPoint,
+  convertPositionToPoint,
 } from "./point-converter";
 import { expectPoint } from "./test-utils";
-import {
-  DevicePosition,
-  GetDevicePositionResponse,
-  ListDevicePositionsResponseEntry,
-} from "@aws-sdk/client-location/dist-types/models/models_0";
+import { DevicePosition, GetDevicePositionResponse, ListDevicePositionsResponseEntry } from "@aws-sdk/client-location";
 
 describe("convertRawPositionToPoint", () => {
-  it("should convert null or undefined to undefined.", () => {
-    expect(convertRawPositionToPoint(null)).toBeUndefined();
-    expect(convertRawPositionToPoint(undefined)).toBeUndefined();
+  it("should convert undefined to undefined.", () => {
+    expect(convertPositionToPoint(undefined)).toBeUndefined();
   });
 
   it("should convert position parameter as-is.", () => {
     const position = [1, 2];
-    const point = convertRawPositionToPoint(position);
+    const point = convertPositionToPoint(position);
     expectPoint(point).toHavePosition(position);
   });
 });
