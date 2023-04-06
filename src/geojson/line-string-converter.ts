@@ -8,7 +8,8 @@ import { Leg } from "@aws-sdk/client-location";
  * Convert an array of Amazon Location Legs to a GeoJSON LineString. It will assume the legs are connected and
  * get StartPosition and EndPosition from the first leg then connect only the EndPosition of the following legs.
  *
- * Note: <b>IncludeLegGeometry</b> should be set to true when calling CalculateRoute or Geometry will not be present in the legs responded.
+ * Note: <b>IncludeLegGeometry</b> should be set to true when calling CalculateRoute or Geometry will not be present in
+ * the Legs response and this will throw an exception.
  *
  * @param legs an array of Legs returned by AmazonLocation, such as CalculateRouteResponse.Legs
  * @returns A GeoJSON LineString representing the legs connected together.

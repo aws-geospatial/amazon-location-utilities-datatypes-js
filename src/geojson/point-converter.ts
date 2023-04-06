@@ -23,11 +23,11 @@ export interface AnyPlaceContainer {
  * @param position A single point geometry specifies a location for a Place using WGS 84 coordinates.
  * @returns a GeoJSON Point on that position, or undefined if the position parameter is undefined.
  */
-export function convertPositionToPoint(position?: number[]): Point | undefined {
+function wrapCoordinatesToPoint(coordinates?: number[]): Point | undefined {
   return (
-    position && {
+    coordinates && {
       type: "Point",
-      coordinates: position,
+      coordinates,
     }
   );
 }
@@ -46,7 +46,7 @@ export function convertPositionToPoint(position?: number[]): Point | undefined {
  *  convertPlaceToPoint(place); // returns { type: "Point", coordinates: [1,2] }
  */
 export function convertPlaceToPoint(place: Place): Point | undefined {
-  return convertPositionToPoint(place.Geometry?.Point);
+  return wrapCoordinatesToPoint(place.Geometry?.Point);
 }
 
 /**
@@ -62,7 +62,7 @@ export function convertPlaceToPoint(place: Place): Point | undefined {
  * const point = convertPlaceContainerToPoint(response?.Results?.[0]); // returns a point representing the first place returned.
  */
 export function convertPlaceContainerToPoint(placeContainer: AnyPlaceContainer): Point | undefined {
-  return convertPositionToPoint(placeContainer.Place?.Geometry?.Point);
+  return wrapCoordinatesToPoint(placeContainer.Place?.Geometry?.Point);
 }
 
 /**
@@ -98,7 +98,7 @@ export function convertPlaceContainersToPoints(
  * const point = convertDevicePositionToPoint(response?.DevicePositions?.[0]); // return a point representing the first position returned.
  */
 export function convertDevicePositionToPoint(devicePosition: AnyDevicePosition): Point | undefined {
-  return convertPositionToPoint(devicePosition.Position);
+  return wrapCoordinatesToPoint(devicePosition.Position);
 }
 
 /**

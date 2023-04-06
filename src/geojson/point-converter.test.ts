@@ -8,22 +8,9 @@ import {
   convertPlaceContainerToPoint,
   convertPlaceToPoint,
   convertDevicePositionToPoint,
-  convertPositionToPoint,
 } from "./point-converter";
 import { expectPoint } from "./test-utils";
 import { DevicePosition, GetDevicePositionResponse, ListDevicePositionsResponseEntry } from "@aws-sdk/client-location";
-
-describe("convertRawPositionToPoint", () => {
-  it("should convert undefined to undefined.", () => {
-    expect(convertPositionToPoint(undefined)).toBeUndefined();
-  });
-
-  it("should convert position parameter as-is.", () => {
-    const position = [1, 2];
-    const point = convertPositionToPoint(position);
-    expectPoint(point).toHavePosition(position);
-  });
-});
 
 describe("convertPlaceToPoint", () => {
   it("should return undefined when place.Geometry is undefined.", () => {

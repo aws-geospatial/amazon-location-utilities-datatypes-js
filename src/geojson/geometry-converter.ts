@@ -19,7 +19,7 @@ export interface AmazonLocationGeometry {
  * @param geometry an Amazon Location geometry, such as LegGeometry, PlaceGeometry, GeofenceGeometry
  * @returns a corresponding GeoJSON Geometry, or undefined if there is no coordinates of any type found in the input.
  */
-export function convertAmazonLocationGeometry(geometry?: AmazonLocationGeometry): Geometry | undefined {
+export function convertGeometry(geometry?: AmazonLocationGeometry): Geometry | undefined {
   const [type, coordinates] = Object.entries(geometry).find(
     (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,6 +37,6 @@ export function convertAmazonLocationGeometry(geometry?: AmazonLocationGeometry)
     case "Circle":
     case "Polygon":
       //TODO: look into these types when working on the Geofence converter.
-      return undefined;
+      throw new Error(`Geometry of ${type} is not implemented yet.`);
   }
 }

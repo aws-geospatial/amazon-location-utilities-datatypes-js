@@ -1,20 +1,20 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AmazonLocationGeometry, convertAmazonLocationGeometry } from "./geometry-converter";
+import { AmazonLocationGeometry, convertGeometry } from "./geometry-converter";
 import { Circle, GeofenceGeometry, LegGeometry, PlaceGeometry } from "@aws-sdk/client-location";
 import { LineString, Point } from "geojson";
 
 describe("convertAmazonLocationGeometry", () => {
   it("should convert object without any valid geometry type to undefined", () => {
-    expect(convertAmazonLocationGeometry({ OtherField: "test" } as AmazonLocationGeometry)).toBeUndefined();
+    expect(convertGeometry({ OtherField: "test" } as AmazonLocationGeometry)).toBeUndefined();
   });
   it("should convert PlaceGeometry to Point", () => {
     const point = [1, 2];
     const placeGeometry: PlaceGeometry = {
       Point: point,
     };
-    const result = convertAmazonLocationGeometry(placeGeometry);
+    const result = convertGeometry(placeGeometry);
     expect(result).toBeDefined();
     expect(result!.type).toBe("Point");
     expect((result as Point)!.coordinates).toBe(point);
@@ -27,7 +27,7 @@ describe("convertAmazonLocationGeometry", () => {
     const legGeometry: LegGeometry = {
       LineString: lineString,
     };
-    const result = convertAmazonLocationGeometry(legGeometry);
+    const result = convertGeometry(legGeometry);
     expect(result).toBeDefined();
     expect(result!.type).toBe("LineString");
     expect((result as LineString)!.coordinates).toBe(lineString);
@@ -40,7 +40,7 @@ describe("convertAmazonLocationGeometry", () => {
     const geofence: GeofenceGeometry = {
       Circle: circle,
     };
-    expect(convertAmazonLocationGeometry(geofence)).toBeUndefined();
+    expect(() => convertGeometry(geofence)).toThrow("Geometry of Circle is not implemented yet.");
   });
   it("convert Polygon is not implemented", () => {
     const polygon = [
@@ -54,6 +54,6 @@ describe("convertAmazonLocationGeometry", () => {
     const geofence: GeofenceGeometry = {
       Polygon: polygon,
     };
-    expect(convertAmazonLocationGeometry(geofence)).toBeUndefined();
+    expect(() => convertGeometry(geofence)).toThrow("Geometry of Polygon is not implemented yet.");
   });
 });
