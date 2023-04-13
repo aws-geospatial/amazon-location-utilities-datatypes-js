@@ -1,4 +1,5 @@
 # Amazon Location Utilities - Data Types for JavaScript
+
 Utilities to translate geospatial data types used by Amazon Location from / to well-known geospatial data types such as GeoJSON.
 
 # Getting Help
@@ -11,9 +12,11 @@ or [guidance](https://github.com/aws-geospatial/amazon-location-utilities-dataty
 If you have a support plan with [AWS Support](https://aws.amazon.com/premiumsupport/), you can also create a new support case.
 
 Please make sure to check out our resources too before opening an issue:
-* Our [Changelog](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/master/CHANGELOG.md) for recent changes.
+
+- Our [Changelog](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/master/CHANGELOG.md) for recent changes.
 
 # Contributing
+
 We welcome community contributions and pull requests. See [CONTRIBUTING.md](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/master/CONTRIBUTING.md) for information on how to set up a development environment and submit code.
 
 ## License
