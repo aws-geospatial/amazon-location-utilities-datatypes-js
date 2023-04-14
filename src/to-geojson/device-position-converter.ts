@@ -21,7 +21,7 @@ import { FeatureCollection, Point } from "geojson";
  *
  * Any device position without the Position field will be skipped.
  *
- * @example Sample input:
+ * @example Converting a GetDevicePosition result
  *
  * Result of GetDevicePosition:
  *
@@ -33,7 +33,30 @@ import { FeatureCollection, Point } from "geojson";
  * }
  * ```
  *
- * Result of ListDevicePositions
+ * Output:
+ *
+ * ```json
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [
+ *     {
+ *       "type": "Feature",
+ *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
+ *       "properties": {
+ *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ"
+ *       },
+ *       "geometry": {
+ *         "type": "Point",
+ *         "coordinates": [123.0, 11.0]
+ *       }
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * @example Converting a ListDevicePositions / BatchGetDevicePositions result
+ *
+ * Result of ListDevicePositions:
  *
  * ```json
  * {
@@ -71,7 +94,7 @@ import { FeatureCollection, Point } from "geojson";
  * }
  * ```
  *
- * @example Sample output:
+ * Output:
  *
  * ```json
  * {
