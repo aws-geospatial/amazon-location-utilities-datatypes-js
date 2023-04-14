@@ -32,7 +32,7 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "status": "ACTIVE"
+ *         "Status": "ACTIVE"
  *       },
  *       "geometry": {
  *         "type": "Polygon",
@@ -76,7 +76,7 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "status": "ACTIVE",
+ *         "Status": "ACTIVE",
  *         "center": [1, 2],
  *         "radius": 10.0
  *       },

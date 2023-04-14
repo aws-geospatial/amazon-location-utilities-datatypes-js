@@ -8,8 +8,7 @@ import { CalculateRouteResponse } from "@aws-sdk/client-location";
  * It converts a route to a GeoJSON FeatureCollection with a single MultiStringLine Feature, each LineString entry of
  * such MultiLineString represents a leg of the route.
  *
- * Fields other than `Legs` of the route will be mapped to a field of the Feature's properties, the field name will be
- * converted from PascalCase to snake_case.
+ * Fields other than `Legs` of the route will be mapped to a field of the Feature's properties.
  *
  * Any leg without the Geometry field will be skipped.
  *

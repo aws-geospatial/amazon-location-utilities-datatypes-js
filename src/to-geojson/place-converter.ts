@@ -15,8 +15,7 @@ import {
  * 2. SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to a FeatureCollection with features
  *    corresponding to the entries in the response.
  *
- * Fields other than `Geometry` in a place will be mapped into the properties of the corresponding Feature. The field
- * name will be converted from PascalCase to snake_case. For example: `PostalCode` will be converted to `postal_code`.
+ * Fields other than `Geometry` in a place will be mapped into the properties of the corresponding Feature.
  *
  * Any place without a coordinate, for example: not having a Geometry field, will be skipped by default.
  *
@@ -126,7 +125,7 @@ import {
  *     {
  *       "type": "Feature",
  *       "properties": {
- *         "postal_code": "12345"
+ *         "PostalCode": "12345"
  *       },
  *       "geometry": {
  *         "type": "Point",

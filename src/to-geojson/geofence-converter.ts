@@ -20,8 +20,7 @@ import { FeatureCollection, Polygon } from "geojson";
  * 2. A Circle Geofence to a Feature with approximated Polygon with “center” and “radius” properties.
  *
  * `GeofenceId` field in the input will be mapped to the id of the corresponding Feature. Fields other then `GeofenceId`
- * and `Geometry` will be mapped into the properties of the corresponding Feature. The field name will be converted from
- * PascalCase to snake_case. For example: `CreateTime` will be converted to `create_time`.
+ * and `Geometry` will be mapped into the properties of the corresponding Feature.
  *
  * Any geofence without any of `Polygon` or `Circle` geometry will be skipped by default.
  *
@@ -54,7 +53,7 @@ import { FeatureCollection, Polygon } from "geojson";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "status": "ACTIVE"
+ *         "Status": "ACTIVE"
  *       },
  *       "geometry": {
  *         "type": "Polygon",
@@ -97,7 +96,7 @@ import { FeatureCollection, Polygon } from "geojson";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "status": "ACTIVE",
+ *         "Status": "ACTIVE",
  *         "center": [1, 2],
  *         "radius": 10.0
  *       },
