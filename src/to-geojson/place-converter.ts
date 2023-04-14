@@ -9,9 +9,11 @@ import {
 } from "@aws-sdk/client-location";
 
 /**
- * It converts place responses to a FeatureCollection with Point Features. It converts a GetPlaceResponse to a
- * FeatureCollection with a single feature, and SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to
- * a FeatureCollection with features corresponding to the entries in the response.
+ * It converts place responses to a FeatureCollection with Point Features. It converts
+ *
+ * 1. GetPlaceResponse to a FeatureCollection with a single feature.
+ * 2. SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to a FeatureCollection with features
+ *    corresponding to the entries in the response.
  *
  * Fields other than `Geometry` in a place will be mapped into the properties of the corresponding Feature. The field
  * name will be converted from PascalCase to snake_case. For example: `PostalCode` will be converted to `postal_code`.

@@ -14,7 +14,10 @@ import { FeatureCollection, Polygon } from "geojson";
  * response and the request, so it can also help previewing geofences on the map before uploading with PutGeofence or
  * BatchPutGeofence.
  *
- * It will convert a Circle Geofence to a Feature with approximated Polygon with “center” and “radius” properties.
+ * It will convert:
+ *
+ * 1. A Polygon Geofence to a Feature with such Polygon
+ * 2. A Circle Geofence to a Feature with approximated Polygon with “center” and “radius” properties.
  *
  * `GeofenceId` field in the input will be mapped to the id of the corresponding Feature. Fields other then `GeofenceId`
  * and `Geometry` will be mapped into the properties of the corresponding Feature. The field name will be converted from

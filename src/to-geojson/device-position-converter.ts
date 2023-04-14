@@ -10,16 +10,15 @@ import {
 import { FeatureCollection, Point } from "geojson";
 
 /**
- * It converts tracker responses to a FeatureCollection with Point Features. It converts a GetDevicePositionResponse to
- * a FeatureCollection with a single feature, and BatchGetDevicePositionResponse, GetDevicePositionHistoryResponse,
- * 51ListDevicePositionsResponse to a FeatureCollection with features corresponding to the entries in the response.
+ * It converts tracker responses to a FeatureCollection with Point Features. It converts
+ *
+ * 1. GetDevicePositionResponse to a FeatureCollection with a single feature.
+ * 2. BatchGetDevicePositionResponse, GetDevicePositionHistoryResponse, ListDevicePositionsResponse to a FeatureCollection
+ *    with features corresponding to the entries in the response.
  *
  * `DeviceId` will be mapped to the `id` of the output Feature. Fields other than `Position` and `DeviceId` of the
  * device position will be mapped into the properties of the corresponding Feature. The field name will be converted
  * from PascalCase to snake_case. For example: `PostalCode` will be converted to `postal_code`.
- *
- * All properties in PositionProperties field of a device position will be mapped into the properties of the
- * corresponding Feature. The property name will be converted from PascalCase to snake_case.
  *
  * Any device position without the Position field will be skipped.
  *
