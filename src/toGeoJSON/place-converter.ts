@@ -16,9 +16,7 @@ import {
  * Fields other than `Geometry` in a place will be mapped into the properties of the corresponding Feature. The field
  * name will be converted from PascalCase to snake_case. For example: `PostalCode` will be converted to `postal_code`.
  *
- * Any place without a coordinate, for example: not having a Geometry field, will be skipped by default. You can call
- * this function with `keepStrictOrder = true` if you want to make the length and order of the output strictly aligned
- * with the input. In that case, such place will be translated to a Feature with `null` Geometry in the output.
+ * Any place without a coordinate, for example: not having a Geometry field, will be skipped by default.
  *
  * @example Drawing result of searchPlaceIndexForText with MapLibre couple be simplified with this converter from
  *
@@ -146,12 +144,9 @@ import {
  * }
  * ```
  *
- * @param place Response of the getPlace or searchPlace* API.
- * @param keepStrictOrder If a place without coordinate should be translated to a Feature with null Geometry. The
- *   default behaviour is to skip such place.
+ * @param place Response of the getPlace or searchPlace* API. default behaviour is to skip such place.
  * @returns A GeoJSON FeatureCollection
  */
 export declare function placeToFeatureCollection(
   place: GetPlaceResponse | SearchPlaceIndexForPositionResponse | SearchPlaceIndexForTextResponse,
-  keepStrictOrder?: boolean,
 ): FeatureCollection<Point | null>;

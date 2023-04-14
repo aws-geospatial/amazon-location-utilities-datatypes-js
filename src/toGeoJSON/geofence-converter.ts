@@ -20,9 +20,7 @@ import { FeatureCollection, Polygon } from "geojson";
  * and `Geometry` will be mapped into the properties of the corresponding Feature. The field name will be converted from
  * PascalCase to snake_case. For example: `CreateTime` will be converted to `create_time`.
  *
- * Any geofence without any of `Polygon` or `Circle` geometry will be skipped by default. You can call this function
- * with `keepStrictOrder = true` if you want to make the length and order of the output strictly aligned with the input.
- * In that case, such geofence will be translated to a Feature with `null` Geometry in the output.
+ * Any geofence without any of `Polygon` or `Circle` geometry will be skipped by default.
  *
  * @example Converting a polygon geofence
  *
@@ -113,5 +111,4 @@ import { FeatureCollection, Polygon } from "geojson";
  */
 export declare function geofencesToFeatureCollection(
   geofences: GetGeofenceResponse | PutGeofenceRequest | ListGeofencesResponse | BatchPutGeofenceRequest,
-  keepStrictOrder?: boolean,
 ): FeatureCollection<Polygon | null>;

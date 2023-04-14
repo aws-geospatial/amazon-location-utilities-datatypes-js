@@ -21,9 +21,7 @@ import { FeatureCollection, Point } from "geojson";
  * All properties in PositionProperties field of a device position will be mapped into the properties of the
  * corresponding Feature. The property name will be converted from PascalCase to snake_case.
  *
- * Any device position without the Position field will be skipped by default. You can call this function with
- * `keepStrictOrder = true` if you want to make the length and order of the output strictly aligned with the input. In
- * that case, such device position will be translated to a Feature with `null` Geometry in the output.
+ * Any device position without the Position field will be skipped.
  *
  * @example Sample input:
  *
@@ -112,5 +110,4 @@ export declare function devicePositionsToFeatureCollection(
     | BatchGetDevicePositionResponse
     | GetDevicePositionHistoryResponse
     | ListDevicePositionsResponse,
-  keepStrictOrder?: boolean,
 ): FeatureCollection<Point | null>;
