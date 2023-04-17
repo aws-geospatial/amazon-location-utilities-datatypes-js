@@ -81,11 +81,11 @@ import { CalculateRouteResponse } from "@aws-sdk/client-location";
  *   ]
  * }
  * ```
- * 
+ *
  * @example Converting a CalculateRoute result with a leg missing the Geometry field
  *
  * Result of CalculateRoute:
- * 
+ *
  * ```json
  * {
  *   "Summary": {
@@ -153,6 +153,5 @@ import { CalculateRouteResponse } from "@aws-sdk/client-location";
  *   ]
  * }
  * ```
- * 
  */
 export declare function routeToFeatureCollection(route: CalculateRouteResponse): FeatureCollection<MultiLineString>;

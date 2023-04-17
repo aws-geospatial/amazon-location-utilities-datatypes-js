@@ -144,7 +144,7 @@ import { FeatureCollection, Point } from "geojson";
  *   ]
  * }
  * ```
- * 
+ *
  * @example Converting a GetDevicePositionHistory result with a missing Position field
  *
  * Result of GetDevicePositionHistory:
@@ -166,7 +166,7 @@ import { FeatureCollection, Point } from "geojson";
  *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "Position": [123.0, 13.0],
  *       "SampleTime": "2023-04-17T18:48:50.015Z"
- *     },
+ *     }
  *   ]
  * }
  * ```
@@ -198,11 +198,10 @@ import { FeatureCollection, Point } from "geojson";
  *         "type": "Point",
  *         "coordinates": [123.0, 13.0]
  *       }
- *     },
+ *     }
  *   ]
  * }
  * ```
- * 
  */
 export declare function devicePositionsToFeatureCollection(
   devicePositions:

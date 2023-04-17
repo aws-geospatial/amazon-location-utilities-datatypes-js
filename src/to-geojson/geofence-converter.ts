@@ -110,7 +110,7 @@ import { FeatureCollection, Polygon } from "geojson";
  *   ]
  * }
  * ```
- * 
+ *
  * @example Converting a ListGeofences result with a missing Geometry field
  *
  * Result of ListGeofences:
@@ -150,7 +150,7 @@ import { FeatureCollection, Polygon } from "geojson";
  * ```
  *
  * Output:
- * 
+ *
  * ```json
  * {
  *   "type": "FeatureCollection",
@@ -189,7 +189,6 @@ import { FeatureCollection, Polygon } from "geojson";
  *   ]
  * }
  * ```
- * 
  */
 export declare function geofencesToFeatureCollection(
   geofences: GetGeofenceResponse | PutGeofenceRequest | ListGeofencesResponse | BatchPutGeofenceRequest,

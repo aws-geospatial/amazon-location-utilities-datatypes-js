@@ -105,7 +105,7 @@ import {
  * ```
  *
  * Output:
- * 
+ *
  * ```json
  * {
  *   "type": "FeatureCollection",
@@ -132,7 +132,7 @@ import {
  *   ]
  * }
  * ```
- * 
+ *
  * @example Converting a GetPlace result
  *
  * Result of GetPlace:
@@ -148,7 +148,7 @@ import {
  * ```
  *
  * Output:
- * 
+ *
  * ```json
  * {
  *   "type": "FeatureCollection",
@@ -193,13 +193,13 @@ import {
  *         },
  *         "PostalCode": "333333"
  *       }
- *     },
+ *     }
  *   ]
  * }
  * ```
  *
  * Output:
- * 
+ *
  * ```json
  * {
  *   "type": "FeatureCollection",
@@ -227,7 +227,7 @@ import {
  *   ]
  * }
  * ```
- * 
+ *
  * @param place Response of the getPlace or searchPlace* API. default behaviour is to skip such place.
  * @returns A GeoJSON FeatureCollection
  */
