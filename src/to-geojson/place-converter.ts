@@ -77,9 +77,9 @@ import {
  * });
  * ```
  *
- * @example Sample inputs:
+ * @example Converting a SearchPlaceIndexForText result
  *
- * Result of searchPlaceIndexForText:
+ * Result of SearchPlaceIndexForText:
  *
  * ```json
  * {
@@ -104,20 +104,8 @@ import {
  * }
  * ```
  *
- * Result of getPlace:
- *
- * ```json
- * {
- *   "Place": {
- *     "Geometry": {
- *       "Point": [123.0, 11.0]
- *     }
- *   }
- * }
- * ```
- *
- * @example Sample output:
- *
+ * Output:
+ * 
  * ```json
  * {
  *   "type": "FeatureCollection",
@@ -144,7 +132,102 @@ import {
  *   ]
  * }
  * ```
+ * 
+ * @example Converting a GetPlace result
  *
+ * Result of GetPlace:
+ *
+ * ```json
+ * {
+ *   "Place": {
+ *     "Geometry": {
+ *       "Point": [123.0, 11.0]
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * Output:
+ * 
+ * ```json
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [
+ *     {
+ *       "type": "Feature",
+ *       "properties": {},
+ *       "geometry": {
+ *         "type": "Point",
+ *         "coordinates": [123.0, 11.0]
+ *       }
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * @example Converting a SearchPlaceIndexForPosition result with a missing Geometry field
+ *
+ * Result of SearchPlaceIndexForPosition:
+ *
+ * ```json
+ * {
+ *   "Results": [
+ *     {
+ *       "Place": {
+ *         "Geometry": {
+ *           "Point": [123.0, 11.0]
+ *         },
+ *         "PostalCode": "111111"
+ *       }
+ *     },
+ *     {
+ *       "Place": {
+ *         "Geometry": undefined,
+ *         "PostalCode": "222222"
+ *       }
+ *     },
+ *     {
+ *       "Place": {
+ *         "Geometry": {
+ *           "Point": [234.0, 22.0]
+ *         },
+ *         "PostalCode": "333333"
+ *       }
+ *     },
+ *   ]
+ * }
+ * ```
+ *
+ * Output:
+ * 
+ * ```json
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [
+ *     {
+ *       "type": "Feature",
+ *       "properties": {
+ *         "PostalCode": "111111"
+ *       },
+ *       "geometry": {
+ *         "type": "Point",
+ *         "coordinates": [123.0, 11.0]
+ *       }
+ *     },
+ *     {
+ *       "type": "Feature",
+ *       "properties": {
+ *         "PostalCode": "333333"
+ *       },
+ *       "geometry": {
+ *         "type": "Point",
+ *         "coordinates": [234.0, 22.0]
+ *       }
+ *     }
+ *   ]
+ * }
+ * ```
+ * 
  * @param place Response of the getPlace or searchPlace* API. default behaviour is to skip such place.
  * @returns A GeoJSON FeatureCollection
  */
