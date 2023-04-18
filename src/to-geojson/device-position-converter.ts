@@ -17,8 +17,7 @@ import { FeatureCollection, Point } from "geojson";
  *    with features corresponding to the entries in the response.
  *
  * `DeviceId` will be mapped to the `id` of the output Feature. Fields other than `Position` and `DeviceId` of the
- * device position will be mapped into the properties of the corresponding Feature. Items inside the
- * `PositionProperties` field will also be mapped into the properties of the corresponding Feature.
+ * device position will be mapped into the properties of the corresponding Feature.
  *
  * Any device position without the Position field will be skipped.
  *
