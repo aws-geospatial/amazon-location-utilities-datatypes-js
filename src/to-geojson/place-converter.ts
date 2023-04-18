@@ -1,9 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { FeatureCollection, Point } from "geojson";
+import { Feature, FeatureCollection, Point } from "geojson";
 import {
   GetPlaceResponse,
+  Place,
   SearchPlaceIndexForPositionResponse,
   SearchPlaceIndexForTextResponse,
 } from "@aws-sdk/client-location";
@@ -148,6 +149,52 @@ import {
  * @param place Response of the getPlace or searchPlace* API. default behaviour is to skip such place.
  * @returns A GeoJSON FeatureCollection
  */
-export declare function placeToFeatureCollection(
+export function placeToFeatureCollection(
   place: GetPlaceResponse | SearchPlaceIndexForPositionResponse | SearchPlaceIndexForTextResponse,
-): FeatureCollection<Point | null>;
+): FeatureCollection<Point | null> {
+  if ("Results" in place) {
+    const features = place.Results.map((result) => result.Place && convertPlaceToFeature(result.Place));
+    return wrapFeatureCollection(features);
+  } else if ("Place" in place) {
+    const features = [place.Place && convertPlaceToFeature(place.Place)];
+    return wrapFeatureCollection(features);
+  } else {
+    throw new Error("Results and Place properties cannot be found.");
+  }
+}
+
+/**
+ * Convert an Amazon Location Place object to a GeoJSON Feature.
+ *
+ * @param place The Place object from Amazon Location SDK.
+ * @returns A GeoJSON Feature of the Place object, or null if there isn't the Geometry.Point property present.
+ */
+function convertPlaceToFeature(place: Place): Feature<Point | null> | null {
+  const { Geometry, ...placeProperties } = place;
+  if (Geometry?.Point) {
+    const coordinates = Geometry.Point;
+    return {
+      type: "Feature",
+      properties: { ...placeProperties },
+      geometry: {
+        type: "Point",
+        coordinates: coordinates,
+      },
+    };
+  } else {
+    return null;
+  }
+}
+
+/**
+ * Wraps an array of GeoJSON Features with a FeatureCollection.
+ *
+ * @param features An array of GeoJSON Features.
+ * @returns A GeoJSON FeatureCollection containing provided Features.
+ */
+function wrapFeatureCollection(features: Feature<Point | null>[]): FeatureCollection<Point | null> {
+  return {
+    type: "FeatureCollection",
+    features: features.filter((feature) => feature),
+  };
+}
