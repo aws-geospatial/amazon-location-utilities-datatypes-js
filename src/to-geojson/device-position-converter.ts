@@ -49,8 +49,10 @@ import { FeatureCollection, Point } from "geojson";
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
  *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
- *         "RouteNumber": "66",
- *         "Speed": "45mph"
+ *         "PositionProperties": {
+ *           "RouteNumber": "66",
+ *           "Speed": "45mph"
+ *         }
  *       },
  *       "geometry": {
  *         "type": "Point",
@@ -120,8 +122,10 @@ import { FeatureCollection, Point } from "geojson";
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
  *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
- *         "RouteNumber": "66",
- *         "Speed": "45mph"
+ *         "PositionProperties": {
+ *           "RouteNumber": "66",
+ *           "Speed": "45mph"
+ *         }
  *       },
  *       "geometry": {
  *         "type": "Point",
