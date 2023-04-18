@@ -17,7 +17,8 @@ import { FeatureCollection, Point } from "geojson";
  *    with features corresponding to the entries in the response.
  *
  * `DeviceId` will be mapped to the `id` of the output Feature. Fields other than `Position` and `DeviceId` of the
- * device position will be mapped into the properties of the corresponding Feature.
+ * device position will be mapped into the properties of the corresponding Feature. Items inside the
+ * `PositionProperties` field will also be mapped into the properties of the corresponding Feature.
  *
  * Any device position without the Position field will be skipped.
  *
@@ -29,7 +30,11 @@ import { FeatureCollection, Point } from "geojson";
  * {
  *   "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *   "Position": [123.0, 11.0],
- *   "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ"
+ *   "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *   "PositionProperties": {
+ *     "RouteNumber": "66",
+ *     "Speed": "45mph"
+ *   }
  * }
  * ```
  *
@@ -43,7 +48,9 @@ import { FeatureCollection, Point } from "geojson";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ"
+ *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *         "RouteNumber": "66",
+ *         "Speed": "45mph"
  *       },
  *       "geometry": {
  *         "type": "Point",
@@ -64,7 +71,11 @@ import { FeatureCollection, Point } from "geojson";
  *     {
  *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "Position": [123.0, 11.0],
- *       "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ"
+ *       "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *       "PositionProperties": {
+ *         "RouteNumber": "66",
+ *         "Speed": "45mph"
+ *       }
  *     },
  *     {
  *       "DeviceId": "D775D81A-BF1B-4311-9D54-2DCCA2B0BECA",
@@ -83,7 +94,11 @@ import { FeatureCollection, Point } from "geojson";
  *     {
  *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "Position": [123.0, 11.0],
- *       "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ"
+ *       "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *       "PositionProperties": {
+ *         "RouteNumber": "66",
+ *         "Speed": "45mph"
+ *       }
  *     },
  *     {
  *       "DeviceId": "D775D81A-BF1B-4311-9D54-2DCCA2B0BECA",
@@ -104,7 +119,9 @@ import { FeatureCollection, Point } from "geojson";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ"
+ *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *         "RouteNumber": "66",
+ *         "Speed": "45mph"
  *       },
  *       "geometry": {
  *         "type": "Point",
