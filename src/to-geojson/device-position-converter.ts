@@ -16,10 +16,9 @@ import { FeatureCollection, Point } from "geojson";
  * 2. BatchGetDevicePositionResponse, GetDevicePositionHistoryResponse, ListDevicePositionsResponse to a FeatureCollection
  *    with features corresponding to the entries in the response.
  *
- * `DeviceId` will be mapped to the `id` of the output Feature. Fields other than `Position` and `DeviceId` of the
- * device position will be mapped into the properties of the corresponding Feature.
- *
- * Any device position without the Position field will be skipped.
+ * `DeviceId` will be mapped to the `id` of the output Feature. `DeviceId` will not be mapped for
+ * GetDevicePositionHistory. Fields other than `Position` and `DeviceId` of the device position will be mapped into the
+ * properties of the corresponding Feature.
  *
  * @example Converting a GetDevicePosition result
  *
@@ -28,8 +27,11 @@ import { FeatureCollection, Point } from "geojson";
  * ```json
  * {
  *   "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
- *   "Position": [123.0, 11.0],
- *   "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *   "SampleTime": "2023-04-18T21:35:44Z",
+ *   "Position": [-125.14, 49.29],
+ *   "Accuracy": {
+ *     "Horizontal": 1
+ *   },
  *   "PositionProperties": {
  *     "RouteNumber": "66",
  *     "Speed": "45mph"
@@ -47,22 +49,25 @@ import { FeatureCollection, Point } from "geojson";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *         "SampleTime": "2023-04-18T21:33:44Z",
  *         "PositionProperties": {
  *           "RouteNumber": "66",
  *           "Speed": "45mph"
  *         }
+ *         "Accuracy": {
+ *           "Horizontal": 1
+ *         }
  *       },
  *       "geometry": {
  *         "type": "Point",
- *         "coordinates": [123.0, 11.0]
+ *         "coordinates": [-125.14, 49.29]
  *       }
  *     }
  *   ]
  * }
  * ```
  *
- * @example Converting a ListDevicePositions / BatchGetDevicePositions result
+ * @example Converting a ListDevicePositions result
  *
  * Result of ListDevicePositions:
  *
@@ -71,41 +76,21 @@ import { FeatureCollection, Point } from "geojson";
  *   "Entries": [
  *     {
  *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
- *       "Position": [123.0, 11.0],
- *       "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *       "SampleTime": "2023-04-18T21:35:44Z",
+ *       "Position": [-125.14, 49.29],
  *       "PositionProperties": {
  *         "RouteNumber": "66",
  *         "Speed": "45mph"
+ *       },
+ *       "Accuracy": {
+ *         "Horizontal": 1
  *       }
  *     },
  *     {
  *       "DeviceId": "D775D81A-BF1B-4311-9D54-2DCCA2B0BECA",
- *       "Position": [123.0, 12.0]
+ *       "SampleTime": "2023-04-18T21:40:44Z",
+ *       "Position": [-120.57, 50.36]
  *     }
- *     // , ...
- *   ]
- * }
- * ```
- *
- * Result of BatchGetDevicePosition:
- *
- * ```json
- * {
- *   "DevicePositions": [
- *     {
- *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
- *       "Position": [123.0, 11.0],
- *       "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
- *       "PositionProperties": {
- *         "RouteNumber": "66",
- *         "Speed": "45mph"
- *       }
- *     },
- *     {
- *       "DeviceId": "D775D81A-BF1B-4311-9D54-2DCCA2B0BECA",
- *       "Position": [123.0, 12.0]
- *     }
- *     // , ...
  *   ]
  * }
  * ```
@@ -120,32 +105,36 @@ import { FeatureCollection, Point } from "geojson";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "SampleTime": "YYYY-MM-DDThh:mm:ss.sssZ",
+ *         "SampleTime": "2023-04-18T21:35:44Z",
  *         "PositionProperties": {
  *           "RouteNumber": "66",
  *           "Speed": "45mph"
+ *         },
+ *         "Accuracy": {
+ *           "Horizontal": 1
  *         }
  *       },
  *       "geometry": {
  *         "type": "Point",
- *         "coordinates": [123.0, 11.0]
+ *         "coordinates": [-125.14, 49.29]
  *       }
  *     },
  *     {
  *       "type": "Feature",
  *       "id": "D775D81A-BF1B-4311-9D54-2DCCA2B0BECA",
- *       "properties": {},
+ *       "properties": {
+ *         "SampleTime": "2023-04-18T21:40:44Z"
+ *       },
  *       "geometry": {
  *         "type": "Point",
- *         "coordinates": [123.0, 12.0]
+ *         "coordinates": [-120.57, 50.36]
  *       }
  *     }
- *     //, ...
  *   ]
  * }
  * ```
  *
- * @example Converting a GetDevicePositionHistory result with a missing Position field
+ * @example Converting a GetDevicePositionHistory result
  *
  * Result of GetDevicePositionHistory:
  *
@@ -154,18 +143,15 @@ import { FeatureCollection, Point } from "geojson";
  *   "DevicePositions": [
  *     {
  *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
- *       "Position": [123.0, 11.0],
- *       "SampleTime": "2023-04-17T18:48:11.012Z"
+ *       "SampleTime": "2023-04-18T21:35:44Z",
+ *       "ReceivedTime": "2023-04-18T21:35:44Z",
+ *       "Position": [-125.25, 49.32]
  *     },
  *     {
  *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
- *       "Position": undefined,
- *       "SampleTime": "2023-04-17T18:48:20.039Z"
- *     },
- *     {
- *       "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
- *       "Position": [123.0, 13.0],
- *       "SampleTime": "2023-04-17T18:48:50.015Z"
+ *       "SampleTime": "2023-04-18T21:50:44Z",
+ *       "ReceivedTime": "2023-04-18T21:50:44Z",
+ *       "Position": [-125.14, 49.29]
  *     }
  *   ]
  * }
@@ -179,24 +165,22 @@ import { FeatureCollection, Point } from "geojson";
  *   "features": [
  *     {
  *       "type": "Feature",
- *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "SampleTime": "2023-04-17T18:48:11.012Z"
+ *         "SampleTime": "2023-04-18T21:35:44Z"
  *       },
  *       "geometry": {
  *         "type": "Point",
- *         "coordinates": [123.0, 11.0]
+ *         "coordinates": [-125.25, 49.32]
  *       }
  *     },
  *     {
  *       "type": "Feature",
- *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "SampleTime": "2023-04-17T18:48:50.015Z"
+ *         "SampleTime": "2023-04-18T21:50:44Z"
  *       },
  *       "geometry": {
  *         "type": "Point",
- *         "coordinates": [123.0, 13.0]
+ *         "coordinates": [-125.14, 49.29]
  *       }
  *     }
  *   ]
