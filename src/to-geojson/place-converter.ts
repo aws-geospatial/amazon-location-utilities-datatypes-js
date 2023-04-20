@@ -15,11 +15,12 @@ import {
  * 2. SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to a FeatureCollection with features
  *    corresponding to the entries in the response.
  *
- * Fields other than `Geometry` in a place will be mapped into the properties of the corresponding Feature.
+ * `PlaceId` will be mapped to the `id` of the output Feature if `PlaceId` is provided. Fields other than `PlaceId` and
+ * `Geometry` in a place will be mapped into the properties of the corresponding Feature.
  *
- * Any place without a coordinate, for example: not having a Geometry field, will be skipped by default.
+ * Any place without the `Point` field will be skipped.
  *
- * @example Drawing result of searchPlaceIndexForText with MapLibre couple be simplified with this converter from
+ * @example Drawing result of SearchPlaceIndexForText with MapLibre couple be simplified with this converter from
  *
  * ```js
  * var map; // map is an initialized MapLibre instance
@@ -77,46 +78,30 @@ import {
  * });
  * ```
  *
- * @example Sample inputs:
+ * @example Converting a GetPlace result
  *
- * Result of searchPlaceIndexForText:
- *
- * ```json
- * {
- *   "Results": [
- *     {
- *       "Place": {
- *         "Geometry": {
- *           "Point": [123.0, 11.0]
- *         },
- *         "PostalCode": "12345"
- *       }
- *     },
- *     {
- *       "Place": {
- *         "Geometry": {
- *           "Point": [123.0, 12.0]
- *         }
- *       }
- *     }
- *     // , ...
- *   ]
- * }
- * ```
- *
- * Result of getPlace:
+ * Result of GetPlace:
  *
  * ```json
  * {
  *   "Place": {
+ *     "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC, V6G 1C8, CAN",
  *     "Geometry": {
- *       "Point": [123.0, 11.0]
- *     }
+ *       "Point": [-123.13, 49.28]
+ *     },
+ *     "AddressNumber": "1675",
+ *     "Street": "Robson St",
+ *     "Municipality": "Vancouver",
+ *     "SubRegion": "Greater Vancouver",
+ *     "Region": "British Columbia",
+ *     "Country": "CAN",
+ *     "PostalCode": "V6G 1C8",
+ *     "Interpolated": false
  *   }
  * }
  * ```
  *
- * @example Sample output:
+ * Output:
  *
  * ```json
  * {
@@ -125,22 +110,157 @@ import {
  *     {
  *       "type": "Feature",
  *       "properties": {
- *         "PostalCode": "12345"
+ *         "Place": {
+ *           "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC, V6G 1C8, CAN",
+ *           "AddressNumber": "1675",
+ *           "Street": "Robson St",
+ *           "Municipality": "Vancouver",
+ *           "SubRegion": "Greater Vancouver",
+ *           "Region": "British Columbia",
+ *           "Country": "CAN",
+ *           "PostalCode": "V6G 1C8",
+ *           "Interpolated": false
+ *         }
  *       },
  *       "geometry": {
  *         "type": "Point",
- *         "coordinates": [123.0, 11.0]
+ *         "coordinates": [-123.13, 49.28]
+ *       }
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * @example Converting a SearchPlaceIndexForTextResponse result with the second result missing the `Point` field
+ *
+ * Result of SearchPlaceIndexForTextResponse:
+ *
+ * ```json
+ * {
+ *   "Summary": {
+ *     "Text": "whole foods",
+ *     "BiasPosition": [-123.115, 49.295],
+ *     "MaxResults": 2,
+ *     "DataSource": "Here"
+ *   },
+ *   "Results": [
+ *     {
+ *       "Place": {
+ *         "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
+ *         "Geometry": {
+ *           "Point": [-123.132, 49.29]
+ *         },
+ *         "AddressNumber": "1675",
+ *         "Street": "Robson St",
+ *         "Neighborhood": "West End",
+ *         "Municipality": "Vancouver",
+ *         "SubRegion": "Metro Vancouver",
+ *         "Region": "British Columbia",
+ *         "Country": "CAN",
+ *         "PostalCode": "V6G 1C8",
+ *         "Interpolated": false,
+ *         "TimeZone": {
+ *           "Name": "America/Vancouver",
+ *           "Offset": -25200
+ *         }
+ *       },
+ *       "Distance": 1385.945532454018,
+ *       "PlaceId": "AQAAAHAArZ9I7WtFD"
+ *     },
+ *     {
+ *       "Place": {
+ *         "Label": "Whole Foods Market, 510 W 8th Ave, Vancouver, BC V5Z 1C5, Canada",
+ *         "Geometry": {}
+ *       },
+ *       "PlaceId": "AQAAAHAA0gZK0c"
+ *     },
+ *     {
+ *       "Place": {
+ *         "Label": "Whole Foods, 925 Main St, West Vancouver, BC V7T, Canada",
+ *         "Geometry": {
+ *           "Point": [-123.142, 49.325]
+ *         },
+ *         "AddressNumber": "925",
+ *         "Street": "Main St",
+ *         "Neighborhood": "Capilano Indian Reserve 5",
+ *         "Municipality": "West Vancouver",
+ *         "SubRegion": "Metro Vancouver",
+ *         "Region": "British Columbia",
+ *         "Country": "CAN",
+ *         "PostalCode": "V7T",
+ *         "Interpolated": false,
+ *         "TimeZone": {
+ *           "Name": "America/Vancouver",
+ *           "Offset": -25200
+ *         }
+ *       },
+ *       "Distance": 3876.5708436735226,
+ *       "PlaceId": "AQAAAHAAo5aDp0fMX"
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * Output:
+ *
+ * ```json
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [
+ *     {
+ *       "type": "Feature",
+ *       "id": "AQAAAHAArZ9I7WtFD",
+ *       "properties": {
+ *         "Place": {
+ *           "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
+ *           "AddressNumber": "1675",
+ *           "Street": "Robson St",
+ *           "Neighborhood": "West End",
+ *           "Municipality": "Vancouver",
+ *           "SubRegion": "Metro Vancouver",
+ *           "Region": "British Columbia",
+ *           "Country": "CAN",
+ *           "PostalCode": "V6G 1C8",
+ *           "Interpolated": false,
+ *           "TimeZone": {
+ *             "Name": "America/Vancouver",
+ *             "Offset": -25200
+ *           }
+ *         },
+ *         "Distance": 1385.945532454018
+ *       },
+ *       "geometry": {
+ *         "type": "Point",
+ *         "coordinates": [-123.132, 49.29]
  *       }
  *     },
  *     {
  *       "type": "Feature",
- *       "properties": {},
+ *       "id": "AQAAAHAAo5aDp0fMX",
+ *       "properties": {
+ *         "Place": {
+ *           "Label": "Whole Foods, 925 Main St, West Vancouver, BC V7T, Canada",
+ *           "AddressNumber": "925",
+ *           "Street": "Main St",
+ *           "Neighborhood": "Capilano Indian Reserve 5",
+ *           "Municipality": "West Vancouver",
+ *           "SubRegion": "Metro Vancouver",
+ *           "Region": "British Columbia",
+ *           "Country": "CAN",
+ *           "PostalCode": "V7T",
+ *           "Interpolated": false,
+ *           "TimeZone": {
+ *             "Name": "America/Vancouver",
+ *             "Offset": -25200
+ *           }
+ *         },
+ *         "Distance": 3876.5708436735226
+ *       },
  *       "geometry": {
  *         "type": "Point",
- *         "coordinates": [123.0, 12.0]
+ *         "coordinates": [-123.142, 49.325]
  *       }
  *     }
- *     //, ...
  *   ]
  * }
  * ```

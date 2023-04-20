@@ -10,8 +10,8 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  *
  * It will map the id of the Feature to the `GeofenceId` field of the corresponding entry in the output.
  *
- * If it sees “center” and “radius” properties in a Feature, it will be converted to a Circle Geofence using such
- * properties instead of a Polygon Geofence.
+ * If it sees the `Circle` property in a Feature, it will be converted to a Circle Geofence using its `Center` and
+ * `Radius` properties instead of a Polygon Geofence.
  *
  * <b>Note</b>: when converting the output of `geofencesToFeatureCollection` function, following fields will be removed
  * as we can not set them when uploading geofences:
@@ -32,7 +32,9 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  *       "type": "Feature",
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
- *         "Status": "ACTIVE"
+ *         "Status": "ACTIVE",
+ *         "CreateTime": "2023-04-18T21:35:44Z",
+ *         "UpdateTime": "2023-04-18T23:20:41Z"
  *       },
  *       "geometry": {
  *         "type": "Polygon",
@@ -77,8 +79,12 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
  *         "Status": "ACTIVE",
- *         "center": [1, 2],
- *         "radius": 10.0
+ *         "CreateTime": "2023-04-18T21:35:44Z",
+ *         "UpdateTime": "2023-04-18T23:20:41Z",
+ *         "Circle": {
+ *           "Center": [1, 2],
+ *           "Radius": 10.0
+ *         }
  *       },
  *       "geometry": {
  *         "type": "Polygon",
