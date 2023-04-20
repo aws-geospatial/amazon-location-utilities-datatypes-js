@@ -33,15 +33,17 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            AddressNumber: "111",
-            Country: "CAN",
-            Label: "Test Place",
-            Municipality: "Vancouver",
-            Neighborhood: "Downtown",
-            PostalCode: "V6C",
-            Region: "British Columbia",
-            Street: "Burrard St",
-            SubRegion: "Metro Vancouver",
+            Place: {
+              AddressNumber: "111",
+              Country: "CAN",
+              Label: "Test Place",
+              Municipality: "Vancouver",
+              Neighborhood: "Downtown",
+              PostalCode: "V6C",
+              Region: "British Columbia",
+              Street: "Burrard St",
+              SubRegion: "Metro Vancouver",
+            },
           },
           geometry: {
             type: "Point",
@@ -67,6 +69,7 @@ describe("placeToFeatureCollection", () => {
             },
             AddressNumber: "1050",
           },
+          PlaceId: "abc",
         },
         {
           Place: {
@@ -75,6 +78,7 @@ describe("placeToFeatureCollection", () => {
             },
             AddressNumber: "609",
           },
+          Distance: 1,
         },
         {
           Place: {
@@ -83,6 +87,7 @@ describe("placeToFeatureCollection", () => {
             },
             AddressNumber: "575",
           },
+          PlaceId: "def",
         },
       ],
     };
@@ -91,8 +96,11 @@ describe("placeToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
+          id: "abc",
           properties: {
-            AddressNumber: "1050",
+            Place: {
+              AddressNumber: "1050",
+            },
           },
           geometry: {
             type: "Point",
@@ -102,7 +110,10 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            AddressNumber: "609",
+            Place: {
+              AddressNumber: "609",
+            },
+            Distance: 1,
           },
           geometry: {
             type: "Point",
@@ -111,8 +122,11 @@ describe("placeToFeatureCollection", () => {
         },
         {
           type: "Feature",
+          id: "def",
           properties: {
-            AddressNumber: "575",
+            Place: {
+              AddressNumber: "575",
+            },
           },
           geometry: {
             type: "Point",
@@ -138,6 +152,7 @@ describe("placeToFeatureCollection", () => {
             },
             AddressNumber: "1050",
           },
+          PlaceId: "abc",
           Distance: 0,
         },
         {
@@ -147,6 +162,7 @@ describe("placeToFeatureCollection", () => {
             },
             AddressNumber: "609",
           },
+          PlaceId: "def",
           Distance: 1,
         },
         {
@@ -156,6 +172,7 @@ describe("placeToFeatureCollection", () => {
             },
             AddressNumber: "575",
           },
+          PlaceId: "ghi",
           Distance: 2,
         },
       ],
@@ -165,8 +182,12 @@ describe("placeToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
+          id: "abc",
           properties: {
-            AddressNumber: "1050",
+            Place: {
+              AddressNumber: "1050",
+            },
+            Distance: 0,
           },
           geometry: {
             type: "Point",
@@ -175,8 +196,12 @@ describe("placeToFeatureCollection", () => {
         },
         {
           type: "Feature",
+          id: "def",
           properties: {
-            AddressNumber: "609",
+            Place: {
+              AddressNumber: "609",
+            },
+            Distance: 1,
           },
           geometry: {
             type: "Point",
@@ -185,8 +210,12 @@ describe("placeToFeatureCollection", () => {
         },
         {
           type: "Feature",
+          id: "ghi",
           properties: {
-            AddressNumber: "575",
+            Place: {
+              AddressNumber: "575",
+            },
+            Distance: 2,
           },
           geometry: {
             type: "Point",
@@ -198,7 +227,7 @@ describe("placeToFeatureCollection", () => {
     expect(placeToFeatureCollection(input)).toMatchObject(output);
   });
 
-  it("should skip a feature in the converted FeatureCollection if it is missing a Geometry field", () => {
+  it("should skip a feature in the converted FeatureCollection if it is missing a Point field", () => {
     const input: SearchPlaceIndexForTextResponse = {
       Summary: {
         Text: "grocery store",
@@ -215,7 +244,9 @@ describe("placeToFeatureCollection", () => {
         },
         {
           Place: {
-            Geometry: undefined,
+            Geometry: {
+              Point: undefined,
+            },
             AddressNumber: "609",
           },
         },
@@ -235,7 +266,9 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            AddressNumber: "1050",
+            Place: {
+              AddressNumber: "1050",
+            },
           },
           geometry: {
             type: "Point",
@@ -245,7 +278,9 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            AddressNumber: "575",
+            Place: {
+              AddressNumber: "575",
+            },
           },
           geometry: {
             type: "Point",

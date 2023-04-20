@@ -4,7 +4,8 @@
 import { Feature, FeatureCollection, Point } from "geojson";
 import {
   GetPlaceResponse,
-  Place,
+  SearchForPositionResult,
+  SearchForTextResult,
   SearchPlaceIndexForPositionResponse,
   SearchPlaceIndexForTextResponse,
 } from "@aws-sdk/client-location";
@@ -153,11 +154,11 @@ export function placeToFeatureCollection(
   place: GetPlaceResponse | SearchPlaceIndexForPositionResponse | SearchPlaceIndexForTextResponse,
 ): FeatureCollection<Point | null> {
   if ("Results" in place) {
-    const features = place.Results.map((result) => result.Place && convertPlaceToFeature(result.Place));
-    return wrapFeatureCollection(features);
+    const features = place.Results.map((result) => result && convertPlaceToFeature(result));
+    return toFeatureCollection(features);
   } else if ("Place" in place) {
-    const features = [place.Place && convertPlaceToFeature(place.Place)];
-    return wrapFeatureCollection(features);
+    const features = [convertPlaceToFeature(place)];
+    return toFeatureCollection(features);
   } else {
     throw new Error("Results and Place properties cannot be found.");
   }
@@ -169,18 +170,25 @@ export function placeToFeatureCollection(
  * @param place The Place object from Amazon Location SDK.
  * @returns A GeoJSON Feature of the Place object, or null if there isn't the Geometry.Point property present.
  */
-function convertPlaceToFeature(place: Place): Feature<Point | null> | null {
-  const { Geometry, ...placeProperties } = place;
-  if (Geometry?.Point) {
-    const coordinates = Geometry.Point;
-    return {
+function convertPlaceToFeature(
+  place: GetPlaceResponse | SearchForPositionResult | SearchForTextResult,
+): Feature<Point | null> | null {
+  const coordinates = place.Place.Geometry.Point;
+  if (coordinates) {
+    const feature: Feature<Point | null> = {
       type: "Feature",
-      properties: { ...placeProperties },
+      id: "PlaceId" in place ? place.PlaceId : undefined,
+      properties: { ...place },
       geometry: {
         type: "Point",
         coordinates: coordinates,
       },
     };
+    delete feature.properties.Place.Geometry;
+    if ("PlaceId" in feature.properties) {
+      delete feature.properties.PlaceId;
+    }
+    return feature;
   } else {
     return null;
   }
@@ -192,7 +200,7 @@ function convertPlaceToFeature(place: Place): Feature<Point | null> | null {
  * @param features An array of GeoJSON Features.
  * @returns A GeoJSON FeatureCollection containing provided Features.
  */
-function wrapFeatureCollection(features: Feature<Point | null>[]): FeatureCollection<Point | null> {
+function toFeatureCollection(features: Feature<Point | null>[]): FeatureCollection<Point | null> {
   return {
     type: "FeatureCollection",
     features: features.filter((feature) => feature),
