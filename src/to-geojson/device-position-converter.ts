@@ -16,9 +16,7 @@ import { FeatureCollection, Point } from "geojson";
  * 2. BatchGetDevicePositionResponse, GetDevicePositionHistoryResponse, ListDevicePositionsResponse to a FeatureCollection
  *    with features corresponding to the entries in the response.
  *
- * `DeviceId` will be mapped to the `id` of the output Feature. `DeviceId` will not be mapped for
- * GetDevicePositionHistory. Fields other than `Position` and `DeviceId` of the device position will be mapped into the
- * properties of the corresponding Feature.
+ * Fields other than `Position` of the device position will be mapped into the properties of the corresponding Feature.
  *
  * @example Converting a GetDevicePosition result
  *
@@ -47,13 +45,13 @@ import { FeatureCollection, Point } from "geojson";
  *   "features": [
  *     {
  *       "type": "Feature",
- *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
+ *         "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *         "SampleTime": "2023-04-18T21:33:44Z",
  *         "PositionProperties": {
  *           "RouteNumber": "66",
  *           "Speed": "45mph"
- *         }
+ *         },
  *         "Accuracy": {
  *           "Horizontal": 1
  *         }
@@ -103,8 +101,8 @@ import { FeatureCollection, Point } from "geojson";
  *   "features": [
  *     {
  *       "type": "Feature",
- *       "id": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "properties": {
+ *         "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *         "SampleTime": "2023-04-18T21:35:44Z",
  *         "PositionProperties": {
  *           "RouteNumber": "66",
@@ -121,8 +119,8 @@ import { FeatureCollection, Point } from "geojson";
  *     },
  *     {
  *       "type": "Feature",
- *       "id": "D775D81A-BF1B-4311-9D54-2DCCA2B0BECA",
  *       "properties": {
+ *         "DeviceId": "D775D81A-BF1B-4311-9D54-2DCCA2B0BECA",
  *         "SampleTime": "2023-04-18T21:40:44Z"
  *       },
  *       "geometry": {
@@ -166,6 +164,7 @@ import { FeatureCollection, Point } from "geojson";
  *     {
  *       "type": "Feature",
  *       "properties": {
+ *         "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *         "SampleTime": "2023-04-18T21:35:44Z"
  *       },
  *       "geometry": {
@@ -176,6 +175,7 @@ import { FeatureCollection, Point } from "geojson";
  *     {
  *       "type": "Feature",
  *       "properties": {
+ *         "DeviceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *         "SampleTime": "2023-04-18T21:50:44Z"
  *       },
  *       "geometry": {
