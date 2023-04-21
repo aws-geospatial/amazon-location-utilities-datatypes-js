@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { FeatureCollection, MultiLineString } from "geojson";
+import { Feature, FeatureCollection, MultiLineString } from "geojson";
 import { CalculateRouteResponse } from "@aws-sdk/client-location";
+import { toFeatureCollection } from "./utils";
 
 /**
  * It converts a route to a GeoJSON FeatureCollection with a single MultiStringLine Feature, each LineString entry of
@@ -188,4 +189,16 @@ import { CalculateRouteResponse } from "@aws-sdk/client-location";
  * }
  * ```
  */
-export declare function routeToFeatureCollection(route: CalculateRouteResponse): FeatureCollection<MultiLineString>;
+export function routeToFeatureCollection(route: CalculateRouteResponse): FeatureCollection<MultiLineString | null> {
+  const { Legs, Summary } = route;
+  const legs = Legs.map((leg) => leg.Geometry?.LineString);
+  const feature: Feature<MultiLineString | null> = {
+    type: "Feature",
+    properties: { Summary },
+    geometry: {
+      type: "MultiLineString",
+      coordinates: legs.filter((leg) => leg),
+    },
+  };
+  return toFeatureCollection([feature]) as FeatureCollection<MultiLineString | null>;
+}
