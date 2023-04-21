@@ -9,6 +9,7 @@ import {
   SearchPlaceIndexForPositionResponse,
   SearchPlaceIndexForTextResponse,
 } from "@aws-sdk/client-location";
+import { toFeatureCollection } from "./utils";
 
 /**
  * It converts place responses to a FeatureCollection with Point Features. It converts
@@ -22,10 +23,11 @@ import {
  *
  * Any place without the `Point` field will be skipped.
  *
- * @example Drawing result of SearchPlaceIndexForText with MapLibre couple be simplified with this converter from
+ * @example Drawing the result of SearchPlaceIndexForText with MapLibre could be simplified with this converter from the
+ * below code:
  *
  * ```js
- * var map; // map is an initialized MapLibre instance
+ * // ...
  * location.searchPlaceIndexForText(params, (err, result) => {
  *   if (err) {
  *     // error handling
@@ -56,16 +58,18 @@ import {
  *     });
  *   }
  * });
+ * // ...
  * ```
  *
- * To
+ * To:
  *
  * ```js
+ * // ...
  * location.searchPlaceIndexForText(params, (err, result) => {
  *   if (err) {
  *     // error handling
  *   } else {
- *     const featureCollection = convertPlaces(result);
+ *     const featureCollection = placeToFeatureCollection(result);
  *     map.addSource("search-result", featureCollection);
  *     map.addLayer({
  *       id: "search-result",
@@ -78,6 +82,7 @@ import {
  *     });
  *   }
  * });
+ * // ...
  * ```
  *
  * @example Converting a GetPlace result
@@ -267,7 +272,7 @@ import {
  * }
  * ```
  *
- * @param place Response of the getPlace or searchPlace* API. default behaviour is to skip such place.
+ * @param place Response of the GetPlace or SearchPlace* API.
  * @returns A GeoJSON FeatureCollection
  */
 export function placeToFeatureCollection(
@@ -275,12 +280,14 @@ export function placeToFeatureCollection(
 ): FeatureCollection<Point | null> {
   if ("Results" in place) {
     const features = place.Results.map((result) => result && convertPlaceToFeature(result));
-    return toFeatureCollection(features);
+    return toFeatureCollection(features) as FeatureCollection<Point | null>;
   } else if ("Place" in place) {
     const features = [convertPlaceToFeature(place)];
-    return toFeatureCollection(features);
+    return toFeatureCollection(features) as FeatureCollection<Point | null>;
   } else {
-    throw new Error("Results and Place properties cannot be found.");
+    throw new Error(
+      "Neither Results nor Place properties can be found. At least one of those properties must be present to convert a place response to a FeatureCollection.",
+    );
   }
 }
 
@@ -312,17 +319,4 @@ function convertPlaceToFeature(
   } else {
     return null;
   }
-}
-
-/**
- * Wraps an array of GeoJSON Features with a FeatureCollection.
- *
- * @param features An array of GeoJSON Features.
- * @returns A GeoJSON FeatureCollection containing provided Features.
- */
-function toFeatureCollection(features: Feature<Point | null>[]): FeatureCollection<Point | null> {
-  return {
-    type: "FeatureCollection",
-    features: features.filter((feature) => feature),
-  };
 }

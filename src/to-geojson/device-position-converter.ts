@@ -6,8 +6,11 @@ import {
   GetDevicePositionResponse,
   ListDevicePositionsResponse,
   GetDevicePositionHistoryResponse,
+  DevicePosition,
+  ListDevicePositionsResponseEntry,
 } from "@aws-sdk/client-location";
-import { FeatureCollection, Point } from "geojson";
+import { Feature, FeatureCollection, Point } from "geojson";
+import { toFeatureCollection } from "./utils";
 
 /**
  * It converts tracker responses to a FeatureCollection with Point Features. It converts
@@ -187,10 +190,39 @@ import { FeatureCollection, Point } from "geojson";
  * }
  * ```
  */
-export declare function devicePositionsToFeatureCollection(
+export function devicePositionsToFeatureCollection(
   devicePositions:
     | GetDevicePositionResponse
     | BatchGetDevicePositionResponse
     | GetDevicePositionHistoryResponse
     | ListDevicePositionsResponse,
-): FeatureCollection<Point | null>;
+): FeatureCollection<Point | null> {
+  if ("Position" in devicePositions) {
+    const features = [convertDevicePositionToFeature(devicePositions)];
+    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+  } else if ("DevicePositions" in devicePositions) {
+    const features = devicePositions.DevicePositions.map((result) => result && convertDevicePositionToFeature(result));
+    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+  } else if ("Entries" in devicePositions) {
+    const features = devicePositions.Entries.map((result) => result && convertDevicePositionToFeature(result));
+    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+  } else {
+    throw new Error(
+      "Neither Position, DevicePositions, nor Entries properties can be found. At least one of those properties must be present to convert a tracker response to a FeatureCollection.",
+    );
+  }
+}
+
+function convertDevicePositionToFeature(
+  devicePosition: GetDevicePositionResponse | DevicePosition | ListDevicePositionsResponseEntry,
+): Feature<Point | null> | null {
+  const { Position, ...devicePositionProperties } = devicePosition;
+  return {
+    type: "Feature",
+    properties: { ...devicePositionProperties },
+    geometry: {
+      type: "Point",
+      coordinates: Position,
+    },
+  };
+}
