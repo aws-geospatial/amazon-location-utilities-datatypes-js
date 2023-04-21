@@ -13,8 +13,8 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  * If it sees the `Circle` property in a Feature, it will be converted to a Circle Geofence using its `Center` and
  * `Radius` properties instead of a Polygon Geofence.
  *
- * <b>Note</b>: when converting the output of `geofencesToFeatureCollection` function, the following fields will be removed
- * as we can not set them when uploading geofences:
+ * <b>Note</b>: when converting the output of `geofencesToFeatureCollection` function, the following fields will be
+ * removed as we can not set them when uploading geofences:
  *
  * 1. Status
  * 2. CreateTime
