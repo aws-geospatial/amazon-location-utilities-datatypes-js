@@ -23,10 +23,11 @@ import { toFeatureCollection } from "./utils";
  *
  * Any place without the `Point` field will be skipped.
  *
- * @example Drawing the result of SearchPlaceIndexForText with MapLibre could be simplified with this converter from
+ * @example Drawing the result of SearchPlaceIndexForText with MapLibre could be simplified with this converter from the
+ * below code:
  *
  * ```js
- * var map; // map is an initialized MapLibre instance
+ * // ...
  * location.searchPlaceIndexForText(params, (err, result) => {
  *   if (err) {
  *     // error handling
@@ -57,16 +58,18 @@ import { toFeatureCollection } from "./utils";
  *     });
  *   }
  * });
+ * // ...
  * ```
  *
- * To
+ * To:
  *
  * ```js
+ * // ...
  * location.searchPlaceIndexForText(params, (err, result) => {
  *   if (err) {
  *     // error handling
  *   } else {
- *     const featureCollection = convertPlaces(result);
+ *     const featureCollection = placeToFeatureCollection(result);
  *     map.addSource("search-result", featureCollection);
  *     map.addLayer({
  *       id: "search-result",
@@ -79,6 +82,7 @@ import { toFeatureCollection } from "./utils";
  *     });
  *   }
  * });
+ * // ...
  * ```
  *
  * @example Converting a GetPlace result
@@ -268,7 +272,7 @@ import { toFeatureCollection } from "./utils";
  * }
  * ```
  *
- * @param place Response of the getPlace or searchPlace* API. default behaviour is to skip such place.
+ * @param place Response of the GetPlace or SearchPlace* API.
  * @returns A GeoJSON FeatureCollection
  */
 export function placeToFeatureCollection(
@@ -281,7 +285,9 @@ export function placeToFeatureCollection(
     const features = [convertPlaceToFeature(place)];
     return toFeatureCollection(features) as FeatureCollection<Point | null>;
   } else {
-    throw new Error("Neither Results or Place properties can be found.");
+    throw new Error(
+      "Neither Results nor Place properties can be found. At least one of those properties must be present to convert a place response to a FeatureCollection.",
+    );
   }
 }
 

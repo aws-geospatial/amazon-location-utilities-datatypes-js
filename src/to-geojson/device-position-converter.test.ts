@@ -43,7 +43,6 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    devicePositionsToFeatureCollection(input);
     expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
   });
 
@@ -108,7 +107,6 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    devicePositionsToFeatureCollection(input);
     expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
   });
 
@@ -182,7 +180,6 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    devicePositionsToFeatureCollection(input);
     expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
   });
 
@@ -240,14 +237,13 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    devicePositionsToFeatureCollection(input);
     expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
   });
 
   it("should throw an error if Position, DevicePositions, and Entries properties cannot be found", () => {
     const input = {};
     expect(() => devicePositionsToFeatureCollection(input as GetDevicePositionResponse)).toThrow(
-      "Neither Position, DevicePositions, or Entries properties can be found.",
+      "Neither Position, DevicePositions, nor Entries properties can be found. At least one of those properties must be present to convert a tracker response to a FeatureCollection.",
     );
   });
 });

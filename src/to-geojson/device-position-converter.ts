@@ -207,7 +207,9 @@ export function devicePositionsToFeatureCollection(
     const features = devicePositions.Entries.map((result) => result && convertDevicePositionToFeature(result));
     return toFeatureCollection(features) as FeatureCollection<Point | null>;
   } else {
-    throw new Error("Neither Position, DevicePositions, or Entries properties can be found.");
+    throw new Error(
+      "Neither Position, DevicePositions, nor Entries properties can be found. At least one of those properties must be present to convert a tracker response to a FeatureCollection.",
+    );
   }
 }
 
