@@ -281,7 +281,7 @@ export function placeToFeatureCollection(
     const features = [convertPlaceToFeature(place)];
     return toFeatureCollection(features) as FeatureCollection<Point | null>;
   } else {
-    throw new Error("Results and Place properties cannot be found.");
+    throw new Error("Neither Results or Place properties can be found.");
   }
 }
 

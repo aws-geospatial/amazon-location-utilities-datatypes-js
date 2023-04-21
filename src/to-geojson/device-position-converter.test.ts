@@ -247,7 +247,7 @@ describe("devicePositionsToFeatureCollection", () => {
   it("should throw an error if Position, DevicePositions, and Entries properties cannot be found", () => {
     const input = {};
     expect(() => devicePositionsToFeatureCollection(input as GetDevicePositionResponse)).toThrow(
-      "Position, DevicePositions, and Entries properties cannot be found.",
+      "Neither Position, DevicePositions, or Entries properties can be found.",
     );
   });
 });

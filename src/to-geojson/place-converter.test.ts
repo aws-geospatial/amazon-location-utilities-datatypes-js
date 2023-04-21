@@ -295,7 +295,7 @@ describe("placeToFeatureCollection", () => {
   it("should throw an error if Results and Places properties cannot be found", () => {
     const input = {};
     expect(() => placeToFeatureCollection(input as GetPlaceResponse)).toThrow(
-      "Results and Place properties cannot be found.",
+      "Neither Results or Place properties can be found.",
     );
   });
 });
