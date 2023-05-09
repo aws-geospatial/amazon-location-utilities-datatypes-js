@@ -10,7 +10,7 @@ import {
   ListDevicePositionsResponseEntry,
 } from "@aws-sdk/client-location";
 import { Feature, FeatureCollection, Point } from "geojson";
-import { toFeatureCollection } from "./utils";
+import { emptyFeatureCollection, toFeatureCollection } from "./utils";
 
 /**
  * It converts tracker responses to a FeatureCollection with Point Features. It converts
@@ -199,30 +199,32 @@ export function devicePositionsToFeatureCollection(
 ): FeatureCollection<Point | null> {
   if ("Position" in devicePositions) {
     const features = [convertDevicePositionToFeature(devicePositions)];
-    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+    return toFeatureCollection(features);
   } else if ("DevicePositions" in devicePositions) {
     const features = devicePositions.DevicePositions.map((result) => result && convertDevicePositionToFeature(result));
-    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+    return toFeatureCollection(features);
   } else if ("Entries" in devicePositions) {
     const features = devicePositions.Entries.map((result) => result && convertDevicePositionToFeature(result));
-    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+    return toFeatureCollection(features);
   } else {
-    throw new Error(
-      "Neither Position, DevicePositions, nor Entries properties can be found. At least one of those properties must be present to convert a tracker response to a FeatureCollection.",
-    );
+    return emptyFeatureCollection();
   }
 }
 
 function convertDevicePositionToFeature(
   devicePosition: GetDevicePositionResponse | DevicePosition | ListDevicePositionsResponseEntry,
-): Feature<Point | null> | null {
+): Feature<Point> | null {
   const { Position, ...devicePositionProperties } = devicePosition;
-  return {
-    type: "Feature",
-    properties: { ...devicePositionProperties },
-    geometry: {
-      type: "Point",
-      coordinates: Position,
-    },
-  };
+  if (Position) {
+    return {
+      type: "Feature",
+      properties: { ...devicePositionProperties },
+      geometry: {
+        type: "Point",
+        coordinates: Position,
+      },
+    };
+  } else {
+    return null;
+  }
 }

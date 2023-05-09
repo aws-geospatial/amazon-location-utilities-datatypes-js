@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Feature, FeatureCollection, MultiLineString } from "geojson";
+import { BBox, Feature, FeatureCollection, MultiLineString } from "geojson";
 import { CalculateRouteResponse } from "@aws-sdk/client-location";
-import { toFeatureCollection } from "./utils";
+import { emptyFeatureCollection, toFeatureCollection } from "./utils";
 
 /**
  * It converts a route to a GeoJSON FeatureCollection with a single MultiStringLine Feature, each LineString entry of
@@ -189,16 +189,25 @@ import { toFeatureCollection } from "./utils";
  * }
  * ```
  */
-export function routeToFeatureCollection(route: CalculateRouteResponse): FeatureCollection<MultiLineString | null> {
+export function routeToFeatureCollection(route: CalculateRouteResponse): FeatureCollection<MultiLineString> {
   const { Legs, Summary } = route;
-  const legs = Legs.map((leg) => leg.Geometry?.LineString);
-  const feature: Feature<MultiLineString | null> = {
-    type: "Feature",
-    properties: { Summary },
-    geometry: {
-      type: "MultiLineString",
-      coordinates: legs.filter((leg) => leg),
-    },
-  };
-  return toFeatureCollection([feature]) as FeatureCollection<MultiLineString | null>;
+  if (Legs) {
+    const legs = Legs.map((leg) => leg.Geometry?.LineString);
+
+    const feature: Feature<MultiLineString> = {
+      type: "Feature",
+      properties: { Summary },
+      bbox: route?.Summary?.RouteBBox as BBox,
+      geometry: {
+        type: "MultiLineString",
+        coordinates: legs.filter((leg) => leg),
+      },
+    };
+    if (route.Summary && "RouteBBox" in route.Summary) {
+      delete feature.properties.Summary.RouteBBox;
+    }
+    return toFeatureCollection([feature]);
+  } else {
+    return emptyFeatureCollection();
+  }
 }
