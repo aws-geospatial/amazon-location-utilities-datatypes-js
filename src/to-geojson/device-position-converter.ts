@@ -196,7 +196,7 @@ export function devicePositionsToFeatureCollection(
     | BatchGetDevicePositionResponse
     | GetDevicePositionHistoryResponse
     | ListDevicePositionsResponse,
-): FeatureCollection<Point | null> {
+): FeatureCollection<Point> {
   if ("Position" in devicePositions) {
     const features = [convertDevicePositionToFeature(devicePositions)];
     return toFeatureCollection(features);
