@@ -314,7 +314,5 @@ function convertPlaceToFeature(
       delete feature.properties.PlaceId;
     }
     return feature;
-  } else {
-    return null;
   }
 }

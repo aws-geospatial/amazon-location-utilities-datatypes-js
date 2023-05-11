@@ -224,7 +224,5 @@ function convertDevicePositionToFeature(
         coordinates: Position,
       },
     };
-  } else {
-    return null;
   }
 }

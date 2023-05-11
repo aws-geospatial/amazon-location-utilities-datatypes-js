@@ -10,11 +10,11 @@ import { Feature, FeatureCollection, Geometry, MultiLineString, Point } from "ge
  * @returns A GeoJSON FeatureCollection containing provided Features.
  */
 export function toFeatureCollection<T extends Point | MultiLineString | null>(
-  features?: Feature<T>[],
+  features: Feature<T>[],
 ): FeatureCollection<T> {
   return {
     type: "FeatureCollection",
-    features: features?.filter((feature) => feature),
+    features: features.filter((feature) => feature),
   };
 }
 
