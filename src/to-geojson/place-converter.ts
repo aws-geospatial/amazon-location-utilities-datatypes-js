@@ -9,7 +9,7 @@ import {
   SearchPlaceIndexForPositionResponse,
   SearchPlaceIndexForTextResponse,
 } from "@aws-sdk/client-location";
-import { toFeatureCollection } from "./utils";
+import { emptyFeatureCollection, toFeatureCollection } from "./utils";
 
 /**
  * It converts place responses to a FeatureCollection with Point Features. It converts
@@ -277,17 +277,15 @@ import { toFeatureCollection } from "./utils";
  */
 export function placeToFeatureCollection(
   place: GetPlaceResponse | SearchPlaceIndexForPositionResponse | SearchPlaceIndexForTextResponse,
-): FeatureCollection<Point | null> {
+): FeatureCollection<Point> {
   if ("Results" in place) {
     const features = place.Results.map((result) => result && convertPlaceToFeature(result));
-    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+    return toFeatureCollection(features);
   } else if ("Place" in place) {
     const features = [convertPlaceToFeature(place)];
-    return toFeatureCollection(features) as FeatureCollection<Point | null>;
+    return toFeatureCollection(features);
   } else {
-    throw new Error(
-      "Neither Results nor Place properties can be found. At least one of those properties must be present to convert a place response to a FeatureCollection.",
-    );
+    return emptyFeatureCollection();
   }
 }
 
@@ -299,8 +297,8 @@ export function placeToFeatureCollection(
  */
 function convertPlaceToFeature(
   place: GetPlaceResponse | SearchForPositionResult | SearchForTextResult,
-): Feature<Point | null> | null {
-  const coordinates = place.Place.Geometry.Point;
+): Feature<Point> | null {
+  const coordinates = place.Place?.Geometry?.Point;
   if (coordinates) {
     const feature: Feature<Point | null> = {
       type: "Feature",
@@ -316,7 +314,5 @@ function convertPlaceToFeature(
       delete feature.properties.PlaceId;
     }
     return feature;
-  } else {
-    return null;
   }
 }

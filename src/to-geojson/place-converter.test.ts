@@ -8,6 +8,7 @@ import {
 } from "@aws-sdk/client-location";
 import { placeToFeatureCollection } from "./place-converter";
 import { FeatureCollection } from "geojson";
+import { emptyFeatureCollection } from "./utils";
 
 describe("placeToFeatureCollection", () => {
   it("should convert GetPlaceResponse to a FeatureCollection with a single feature", () => {
@@ -52,7 +53,7 @@ describe("placeToFeatureCollection", () => {
         },
       ],
     };
-    expect(placeToFeatureCollection(input)).toMatchObject(output);
+    expect(placeToFeatureCollection(input)).toEqual(output);
   });
 
   it("should convert SearchPlaceIndexForTextResponse to a FeatureCollection with a multiple features", () => {
@@ -135,7 +136,7 @@ describe("placeToFeatureCollection", () => {
         },
       ],
     };
-    expect(placeToFeatureCollection(input)).toMatchObject(output);
+    expect(placeToFeatureCollection(input)).toEqual(output);
   });
 
   it("should convert SearchPlaceIndexForPositionResponse to a FeatureCollection with a multiple features", () => {
@@ -224,7 +225,7 @@ describe("placeToFeatureCollection", () => {
         },
       ],
     };
-    expect(placeToFeatureCollection(input)).toMatchObject(output);
+    expect(placeToFeatureCollection(input)).toEqual(output);
   });
 
   it("should skip a feature in the converted FeatureCollection if it is missing a Point field", () => {
@@ -289,13 +290,20 @@ describe("placeToFeatureCollection", () => {
         },
       ],
     };
-    expect(placeToFeatureCollection(input)).toMatchObject(output);
+    expect(placeToFeatureCollection(input)).toEqual(output);
   });
 
-  it("should throw an error if Results and Places properties cannot be found", () => {
-    const input = {};
-    expect(() => placeToFeatureCollection(input as GetPlaceResponse)).toThrow(
-      "Neither Results nor Place properties can be found. At least one of those properties must be present to convert a place response to a FeatureCollection.",
-    );
+  it("should return empty FeatureCollection when no coordinate can be found in input.", () => {
+    expect(placeToFeatureCollection({} as GetPlaceResponse)).toMatchObject(emptyFeatureCollection());
+    expect(
+      placeToFeatureCollection({
+        Place: {},
+      } as GetPlaceResponse),
+    ).toMatchObject(emptyFeatureCollection());
+    expect(
+      placeToFeatureCollection({
+        Results: [{}],
+      } as SearchPlaceIndexForPositionResponse),
+    ).toMatchObject(emptyFeatureCollection());
   });
 });

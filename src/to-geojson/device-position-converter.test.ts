@@ -9,6 +9,7 @@ import {
 } from "@aws-sdk/client-location";
 import { devicePositionsToFeatureCollection } from "./device-position-converter";
 import { FeatureCollection } from "geojson";
+import { emptyFeatureCollection } from "./utils";
 
 describe("devicePositionsToFeatureCollection", () => {
   it("should convert GetDevicePositionResponse to a FeatureCollection", () => {
@@ -43,7 +44,7 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
+    expect(devicePositionsToFeatureCollection(input)).toEqual(output);
   });
 
   it("should convert BatchGetDevicePositionResponse to a FeatureCollection", () => {
@@ -107,7 +108,7 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
+    expect(devicePositionsToFeatureCollection(input)).toEqual(output);
   });
 
   it("should convert GetDevicePositionHistoryResponse to a FeatureCollection", () => {
@@ -180,7 +181,7 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
+    expect(devicePositionsToFeatureCollection(input)).toEqual(output);
   });
 
   it("should convert ListDevicePositionsResponse to a FeatureCollection", () => {
@@ -237,13 +238,15 @@ describe("devicePositionsToFeatureCollection", () => {
         },
       ],
     };
-    expect(devicePositionsToFeatureCollection(input)).toMatchObject(output);
+    expect(devicePositionsToFeatureCollection(input)).toEqual(output);
   });
 
-  it("should throw an error if Position, DevicePositions, and Entries properties cannot be found", () => {
-    const input = {};
-    expect(() => devicePositionsToFeatureCollection(input as GetDevicePositionResponse)).toThrow(
-      "Neither Position, DevicePositions, nor Entries properties can be found. At least one of those properties must be present to convert a tracker response to a FeatureCollection.",
-    );
+  it("should return empty feature collection when no position can be found in input.", () => {
+    expect(devicePositionsToFeatureCollection({} as GetDevicePositionResponse)).toEqual(emptyFeatureCollection());
+    expect(
+      devicePositionsToFeatureCollection({
+        DevicePositions: [{}],
+      } as BatchGetDevicePositionResponse),
+    ).toEqual(emptyFeatureCollection());
   });
 });
