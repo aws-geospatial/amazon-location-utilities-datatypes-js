@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { FeatureCollection, Polygon } from "geojson";
+import { Feature, FeatureCollection, Polygon } from "geojson";
 import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
 
 /**
@@ -39,10 +39,12 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  *       "geometry": {
  *         "type": "Polygon",
  *         "coordinates": [
- *           [1, 2],
- *           [1, 3],
- *           [2, 3],
- *           [1, 2]
+ *           [
+ *             [1, 2],
+ *             [1, 3],
+ *             [2, 3],
+ *             [1, 2]
+ *           ]
  *         ]
  *       }
  *     }
@@ -56,12 +58,12 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  * [{
  *   "GeofenceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *   "Geometry": {
- *     "Polygon": [
+ *     "Polygon": [[
  *       [1, 2],
  *       [1, 3],
  *       [2, 3],
  *       [1, 2]
- *     ]
+ *     ]]
  *   }
  * }]
  * ```
@@ -111,6 +113,32 @@ import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
  * }]
  * ```
  */
-export declare function featureCollectionToGeofence(
+export function featureCollectionToGeofence(
   featureCollection: FeatureCollection<Polygon>,
-): BatchPutGeofenceRequestEntry[];
+): BatchPutGeofenceRequestEntry[] {
+  return featureCollection.features.map((feature) => convertFeatureToGeofence(feature)).filter((entry) => entry);
+}
+
+function convertFeatureToGeofence(feature: Feature<Polygon>): BatchPutGeofenceRequestEntry | undefined {
+  if (feature && feature.geometry?.type == "Polygon") {
+    if (feature.properties && "center" in feature.properties) {
+      // Circular geofence
+      return {
+        GeofenceId: String(feature.id),
+        Geometry: {
+          Circle: {
+            Center: feature.properties.center,
+            Radius: feature.properties.radius,
+          },
+        },
+      };
+    } else if (feature.geometry?.coordinates) {
+      return {
+        GeofenceId: String(feature.id),
+        Geometry: {
+          Polygon: feature.geometry.coordinates,
+        },
+      };
+    }
+  }
+}
