@@ -8,10 +8,7 @@ import {
   ListGeofencesResponse,
 } from "@aws-sdk/client-location";
 import { Feature, FeatureCollection, Polygon } from "geojson";
-import {
-  BatchPutGeofenceRequestEntry,
-  ListGeofenceResponseEntry,
-} from "@aws-sdk/client-location/dist-types/models/models_0";
+import { BatchPutGeofenceRequestEntry, ListGeofenceResponseEntry } from "@aws-sdk/client-location";
 import { convertGeometryToFeature, toFeatureCollection } from "./utils";
 
 /**
