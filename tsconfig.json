@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "es2017",
+    "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,
     // Ensure that .d.ts files are created by tsc, but not .js files
     "declaration": true,
     "emitDeclarationOnly": true,
-    // Ensure that Babel can safely transpile files in the TypeScript project
-    "isolatedModules": true,
     "outDir": "dist"
   },
   "typedocOptions": {

@@ -24,7 +24,16 @@
   "engines": {
     "node": ">= 14.0.0"
   },
-  "config": {},
+  "main": "dist/js/index.js",
+  "module": "dist/es/index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/es/index.js",
+      "require": "./dist/js/index.js"
+    }
+  },
+  "types": "dist/js/index.d.ts",
   "scripts": {
     "prettier": "prettier -w .",
     "prettier:check": "prettier -c .",
@@ -32,8 +41,9 @@
     "lint:fix": "eslint --fix .",
     "typedoc": "typedoc",
     "test": "jest --coverage",
+    "build": "npm-run-all build:*",
     "build:types": "tsc",
-    "build": "npm run build:types",
+    "build:rollup": "rollup -c && echo '{\"type\": \"module\"}' > dist/es/package.json",
     "prepare": "husky install"
   },
   "lint-staged": {
@@ -49,6 +59,11 @@
     "@types/geojson": "^7946.0.10"
   },
   "devDependencies": {
+    "@babel/core": "^7.21.8",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/preset-typescript": "^7.21.5",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-node-resolve": "^15.0.2",
     "@turf/distance": "^6.5.0",
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
@@ -57,8 +72,10 @@
     "husky": "^8.0.3",
     "jest": "^29.5.0",
     "lint-staged": "^13.2.2",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.8.7",
     "prettier-plugin-jsdoc": "^0.4.2",
+    "rollup": "^3.22.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24.1",
