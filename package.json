@@ -37,9 +37,11 @@
   },
   "dependencies": {
     "@aws-sdk/client-location": "^3.0.0",
+    "@turf/circle": "^6.5.0",
     "@types/geojson": "^7946.0.10"
   },
   "devDependencies": {
+    "@turf/distance": "^6.5.0",
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",

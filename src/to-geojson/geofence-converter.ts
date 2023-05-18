@@ -7,7 +7,9 @@ import {
   BatchPutGeofenceRequest,
   ListGeofencesResponse,
 } from "@aws-sdk/client-location";
-import { FeatureCollection, Polygon } from "geojson";
+import { Feature, FeatureCollection, Polygon } from "geojson";
+import { BatchPutGeofenceRequestEntry, ListGeofenceResponseEntry } from "@aws-sdk/client-location";
+import { convertGeometryToFeature, toFeatureCollection } from "./utils";
 
 /**
  * It converts a list of geofences to FeatureCollection with Polygon Features. It can convert geofences both in the
@@ -33,10 +35,12 @@ import { FeatureCollection, Polygon } from "geojson";
  *   "GeofenceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *   "Geometry": {
  *     "Polygon": [
- *       [1, 2],
- *       [1, 3],
- *       [2, 3],
- *       [1, 2]
+ *       [
+ *         [1, 2],
+ *         [1, 3],
+ *         [2, 3],
+ *         [1, 2]
+ *       ]
  *     ]
  *   },
  *   "Status": "ACTIVE",
@@ -62,10 +66,12 @@ import { FeatureCollection, Polygon } from "geojson";
  *       "geometry": {
  *         "type": "Polygon",
  *         "coordinates": [
- *           [1, 2],
- *           [1, 3],
- *           [2, 3],
- *           [1, 2]
+ *           [
+ *             [1, 2],
+ *             [1, 3],
+ *             [2, 3],
+ *             [1, 2]
+ *           ]
  *         ]
  *       }
  *     }
@@ -132,10 +138,12 @@ import { FeatureCollection, Polygon } from "geojson";
  *       "GeofenceId": "0C1E4574-4A12-4219-A99D-AE4AEE6DE1AC",
  *       "Geometry": {
  *         "Polygon": [
- *           [1, 2],
- *           [1, 3],
- *           [2, 3],
- *           [1, 2]
+ *           [
+ *             [1, 2],
+ *             [1, 3],
+ *             [2, 3],
+ *             [1, 2]
+ *           ]
  *         ]
  *       },
  *       "Status": "ACTIVE",
@@ -182,10 +190,12 @@ import { FeatureCollection, Polygon } from "geojson";
  *       "geometry": {
  *         "type": "Polygon",
  *         "coordinates": [
- *           [1, 2],
- *           [1, 3],
- *           [2, 3],
- *           [1, 2]
+ *           [
+ *             [1, 2],
+ *             [1, 3],
+ *             [2, 3],
+ *             [1, 2]
+ *           ]
  *         ]
  *       }
  *     },
@@ -212,6 +222,28 @@ import { FeatureCollection, Polygon } from "geojson";
  * }
  * ```
  */
-export declare function geofencesToFeatureCollection(
+export function geofencesToFeatureCollection(
   geofences: GetGeofenceResponse | PutGeofenceRequest | ListGeofencesResponse | BatchPutGeofenceRequest,
-): FeatureCollection<Polygon | null>;
+): FeatureCollection<Polygon> {
+  if ("Entries" in geofences) {
+    return toFeatureCollection(geofences.Entries.map((geofence) => geofenceToFeature(geofence)));
+  } else {
+    return toFeatureCollection([geofenceToFeature(geofences)]);
+  }
+}
+
+function geofenceToFeature(
+  geofence?: GetGeofenceResponse | PutGeofenceRequest | ListGeofenceResponseEntry | BatchPutGeofenceRequestEntry,
+): Feature<Polygon> | undefined {
+  if (geofence) {
+    const result = convertGeometryToFeature(geofence?.Geometry, geofence) as Feature<Polygon>;
+    if (result) {
+      delete result.properties.Geometry;
+      if ("GeofenceId" in geofence) {
+        result.id = geofence.GeofenceId;
+        delete result.properties.GeofenceId;
+      }
+      return result;
+    }
+  }
+}
