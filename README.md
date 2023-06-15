@@ -48,7 +48,10 @@ Converts a FeatureCollection with Polygon Features to an array of BatchPutGeofen
 
 ```
 const featureCollection = { ... };
-const request = featureCollectionToGeofence(featureCollection);
+const request = {
+  CollectionName: "<Geofence Collection Name>",
+  Entries: featureCollectionToGeofence(featureCollection),
+};
 ```
 
 ### Amazon Location to GeoJSON
