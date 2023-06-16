@@ -10,25 +10,22 @@ Install this library from NPM:
 npm install @aws/amazon-location-utilities-datatypes
 ```
 
-# Getting Started
+# Usage
 
-## Import
+Import the library and call the utility functions in the top-level namespace as needed. You can find more details about these functions in the [Documentation](#documentation) section.
 
-Import the translating utility to be used. The [documentation](#documentation) shows all of the the available utilities.
+The example below shows how you can translate an Amazon Location [SearchPlaceIndexForText](https://docs.aws.amazon.com/location/latest/APIReference/API_SearchPlaceIndexForText.html) response from the [AWS JavaScript SDK](https://github.com/aws/aws-sdk-js-v3) to a GeoJSON FeatureCollection:
 
 ```
+// Importing the utility function
 import { placeToFeatureCollection } from '@aws/amazon-location-utilities-datatypes'
-```
 
-## Usage
-
-Translating an Amazon Location [SearchPlaceIndexForText](https://docs.aws.amazon.com/location/latest/APIReference/API_SearchPlaceIndexForText.html) response from the [AWS JavaScript SDK](https://github.com/aws/aws-sdk-js-v3) to a GeoJSON FeatureCollection.
-
-```
 const client = new LocationClient(config);
 const input = { ... };
 const command = new SearchPlaceIndexForTextCommand(input);
 const response = await client.send(command);
+
+// Calling this utility function to convert the response to GeoJSON
 const featureCollection = placeToFeatureCollection(response);
 ```
 
@@ -40,11 +37,11 @@ Detailed documentation can be found under `/docs/index.html` after generating it
 npm run typedoc
 ```
 
-## GeoJSON to Amazon Location
+## GeoJSON to Amazon Location Data Types
 
-**featureCollectionToGeofence**
+### featureCollectionToGeofence
 
-Converts a FeatureCollection with Polygon Features to an array of BatchPutGeofenceRequestEntry, so the result can be used to assemble the request to BatchPutGeofence.
+Converts a GeoJSON FeatureCollection with Polygon Features to an array of BatchPutGeofenceRequestEntry, so the result can be used to assemble the request to BatchPutGeofence.
 
 ```
 const featureCollection = { ... };
@@ -54,11 +51,11 @@ const request = {
 };
 ```
 
-## Amazon Location to GeoJSON
+## Amazon Location Data Types to GeoJSON
 
-**devicePositionsToFeatureCollection**
+### devicePositionsToFeatureCollection
 
-Converts tracker responses to a FeatureCollection with Point Features. It converts:
+Converts [tracker](https://docs.aws.amazon.com/location/latest/developerguide/geofence-tracker-concepts.html#tracking-overview) responses to a FeatureCollection with Point Features. It converts:
 
 1. GetDevicePositionResponse to a FeatureCollection with a single feature.
 2. BatchGetDevicePositionResponse, GetDevicePositionHistoryResponse, ListDevicePositionsResponse to a FeatureCollection with features corresponding to the entries in the response.
@@ -68,9 +65,9 @@ const response = { ... };
 const featureCollection = devicePositionsToFeatureCollection(response)
 ```
 
-**geofencesToFeatureCollection**
+### geofencesToFeatureCollection
 
-Converts a list of geofences to FeatureCollection with Polygon Features. It can convert geofences both in the response and the request, so it can also help preview geofences on the map before uploading with PutGeofence or BatchPutGeofence. It converts:
+Converts a list of [geofences](https://docs.aws.amazon.com/location/latest/developerguide/geofence-tracker-concepts.html#geofence-overview) to FeatureCollection with Polygon Features. It can convert geofences both in the response and the request, so it can also help preview geofences on the map before uploading with PutGeofence or BatchPutGeofence. It converts:
 
 1. A Polygon Geofence to a Feature with such Polygon
 2. A Circle Geofence to a Feature with approximated Polygon with `Center` and `Radius` properties.
@@ -80,9 +77,9 @@ const response = { ... };
 const featureCollection = geofencesToFeatureCollection(response)
 ```
 
-**placeToFeatureCollection**
+### placeToFeatureCollection
 
-Converts place responses to a FeatureCollection with Point Features. It converts:
+Converts [places search](https://docs.aws.amazon.com/location/latest/developerguide/places-concepts.html) responses to a FeatureCollection with Point Features. It converts:
 
 1. GetPlaceResponse to a FeatureCollection with a single feature.
 2. SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to a FeatureCollection with features corresponding to the entries in the response.
@@ -92,14 +89,23 @@ const response = { ... };
 const featureCollection = placeToFeatureCollection(response)
 ```
 
-**routeToFeatureCollection**
+### routeToFeatureCollection
 
-Converts a route to a GeoJSON FeatureCollection with a single MultiStringLine Feature, each LineString entry of such MultiLineString represents a leg of the route.
+Converts a [route](https://docs.aws.amazon.com/location/latest/developerguide/route-concepts.html) to a GeoJSON FeatureCollection with a single MultiLineString Feature. Each LineString entry of the MultiLineString represents a leg of the route.
 
 ```
 const response = { ... };
 const featureCollection = routeToFeatureCollection(response)
 ```
+
+## Error Handling
+
+If the data provided to the utility functions are invalid, the entries in the data will be skipped.
+
+Examples:
+
+- A FeatureCollection containing a Feature of a non-polygon type when calling `featureCollectionToGeofence` will result in a set of geofence entries that do not contain that Feature.
+- An input to `devicePositionsToFeatureCollection` with an device position entry that does not contain the coordinates of the device will result in a FeatureCollection with that device position entry skipped.
 
 # Getting Help
 
