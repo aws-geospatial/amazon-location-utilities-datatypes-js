@@ -40,7 +40,7 @@ Detailed documentation can be found under `/docs/index.html` after generating it
 npm run typedoc
 ```
 
-### GeoJSON to Amazon Location
+## GeoJSON to Amazon Location
 
 **featureCollectionToGeofence**
 
@@ -54,7 +54,7 @@ const request = {
 };
 ```
 
-### Amazon Location to GeoJSON
+## Amazon Location to GeoJSON
 
 **devicePositionsToFeatureCollection**
 
@@ -118,7 +118,7 @@ Please make sure to check out our resources too before opening an issue:
 
 We welcome community contributions and pull requests. See [CONTRIBUTING.md](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/master/CONTRIBUTING.md) for information on how to set up a development environment and submit code.
 
-## License
+# License
 
 Amazon Location Utilities - Data Types for JavaScript is distributed under the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0),
