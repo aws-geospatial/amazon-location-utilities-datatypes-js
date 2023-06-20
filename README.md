@@ -4,19 +4,31 @@ Utilities to translate geospatial data types used by [Amazon Location Service](h
 
 # Installation
 
-Install this library from NPM:
+Install this library from NPM for usage with modules:
 
 ```
 npm install @aws/amazon-location-utilities-datatypes
+```
+
+Importing in an HTML file for usage directly in the browser:
+
+```html
+<script src="TBA"></script>
 ```
 
 # Usage
 
 Import the library and call the utility functions in the top-level namespace as needed. You can find more details about these functions in the [Documentation](#documentation) section.
 
-The example below shows how you can translate an Amazon Location [SearchPlaceIndexForText](https://docs.aws.amazon.com/location/latest/APIReference/API_SearchPlaceIndexForText.html) response from the [AWS JavaScript SDK](https://github.com/aws/aws-sdk-js-v3) to a GeoJSON FeatureCollection:
+The examples below show how you can translate an Amazon Location [SearchPlaceIndexForText](https://docs.aws.amazon.com/location/latest/APIReference/API_SearchPlaceIndexForText.html) response from the [AWS JavaScript SDK](https://aws.amazon.com/sdk-for-javascript/) to a GeoJSON FeatureCollection:
 
-```
+### Usage with modules
+
+This example uses [V3](https://github.com/aws/aws-sdk-js-v3) of the AWS JavaScript SDK.
+
+```javascript
+// Importing AWS JavaScript SDK V3
+import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-location";
 // Importing the utility function
 import { placeToFeatureCollection } from '@aws/amazon-location-utilities-datatypes'
 
@@ -27,6 +39,28 @@ const response = await client.send(command);
 
 // Calling this utility function to convert the response to GeoJSON
 const featureCollection = placeToFeatureCollection(response);
+```
+
+### Usage with the browser
+
+This example uses [V2](https://github.com/aws/aws-sdk-js) of the AWS JavaScript SDK. Importing the AWS JavaScript SDK through a browser script is only possible with V2 of the SDK.
+
+Utility functions will be within `amazonLocationDataConverter`.
+
+```html
+<!-- Importing AWS JavaScript SDK V2 -->
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1401.0.min.js"></script>
+<!-- Importing the utility library from an HTML file -->
+<script src="TBA"></script>
+```
+
+```javascript
+const location = new AWS.Location(options);
+const params = { ... };
+location.searchPlaceIndexForText(params, function (err, data) {
+  // Calling this utility function to convert the data to GeoJSON
+  const featureCollection = amazonLocationDataConverter.placeToFeatureCollection(data);
+});
 ```
 
 # Documentation
@@ -43,7 +77,7 @@ npm run typedoc
 
 Converts a GeoJSON FeatureCollection with Polygon Features to an array of BatchPutGeofenceRequestEntry, so the result can be used to assemble the request to BatchPutGeofence.
 
-```
+```javascript
 const featureCollection = { ... };
 const request = {
   CollectionName: "<Geofence Collection Name>",
@@ -60,7 +94,7 @@ Converts [tracker](https://docs.aws.amazon.com/location/latest/developerguide/ge
 1. GetDevicePositionResponse to a FeatureCollection with a single feature.
 2. BatchGetDevicePositionResponse, GetDevicePositionHistoryResponse, ListDevicePositionsResponse to a FeatureCollection with features corresponding to the entries in the response.
 
-```
+```javascript
 const response = { ... };
 const featureCollection = devicePositionsToFeatureCollection(response)
 ```
@@ -72,7 +106,7 @@ Converts a list of [geofences](https://docs.aws.amazon.com/location/latest/devel
 1. A Polygon Geofence to a Feature with such Polygon
 2. A Circle Geofence to a Feature with approximated Polygon with `Center` and `Radius` properties.
 
-```
+```javascript
 const response = { ... };
 const featureCollection = geofencesToFeatureCollection(response)
 ```
@@ -84,7 +118,7 @@ Converts [places search](https://docs.aws.amazon.com/location/latest/developergu
 1. GetPlaceResponse to a FeatureCollection with a single feature.
 2. SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to a FeatureCollection with features corresponding to the entries in the response.
 
-```
+```javascript
 const response = { ... };
 const featureCollection = placeToFeatureCollection(response)
 ```
@@ -93,7 +127,7 @@ const featureCollection = placeToFeatureCollection(response)
 
 Converts a [route](https://docs.aws.amazon.com/location/latest/developerguide/route-concepts.html) to a GeoJSON FeatureCollection with a single MultiLineString Feature. Each LineString entry of the MultiLineString represents a leg of the route.
 
-```
+```javascript
 const response = { ... };
 const featureCollection = routeToFeatureCollection(response)
 ```
