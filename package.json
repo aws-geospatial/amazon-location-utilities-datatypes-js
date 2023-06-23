@@ -19,7 +19,8 @@
     "mail": ""
   },
   "contributors": [
-    "Eason Huang <yuxuanh@amazon.com>"
+    "Eason Huang <yuxuanh@amazon.com>",
+    "Raymond Lee <imraylee@amazon.com>"
   ],
   "engines": {
     "node": ">= 14.0.0"

@@ -10,7 +10,7 @@ Install this library from NPM for usage with modules:
 npm install @aws/amazon-location-utilities-datatypes
 ```
 
-Importing in an HTML file for usage directly in the browser:
+Importing in an HTML file for usage directly in the browser using the Amazon Location SDK script. The Amazon Location SDK is based on the [AWS SDK for JavaScript V3](https://github.com/aws/aws-sdk-js-v3), which allows the use of making calls to Amazon Location through the script added into the HTML file.
 
 ```html
 <script src="TBA"></script>
@@ -24,7 +24,7 @@ The examples below show how you can translate an Amazon Location [SearchPlaceInd
 
 ### Usage with modules
 
-This example uses [V3](https://github.com/aws/aws-sdk-js-v3) of the AWS JavaScript SDK.
+This example uses the [AWS SDK for JavaScript V3](https://github.com/aws/aws-sdk-js-v3).
 
 ```javascript
 // Importing AWS JavaScript SDK V3
@@ -43,24 +43,25 @@ const featureCollection = placeToFeatureCollection(response);
 
 ### Usage with the browser
 
-This example uses [V2](https://github.com/aws/aws-sdk-js) of the AWS JavaScript SDK. Importing the AWS JavaScript SDK through a browser script is only possible with V2 of the SDK.
+This example uses the Amazon Location SDK.
 
 Utility functions will be within `amazonLocationDataConverter`.
 
 ```html
-<!-- Importing AWS JavaScript SDK V2 -->
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1401.0.min.js"></script>
+<!-- Importing Amazon Location SDK -->
+<script src="TBA"></script>
 <!-- Importing the utility library from an HTML file -->
 <script src="TBA"></script>
 ```
 
 ```javascript
-const location = new AWS.Location(options);
-const params = { ... };
-location.searchPlaceIndexForText(params, function (err, data) {
-  // Calling this utility function to convert the data to GeoJSON
-  const featureCollection = amazonLocationDataConverter.placeToFeatureCollection(data);
-});
+const client = new amazonLocationSDK.LocationClient(config);
+const input = { ... };
+const command = new amazonLocationSDK.SearchPlaceIndexForTextCommand(input);
+const response = await client.send(command);
+
+// Calling this utility function to convert the response to GeoJSON
+const featureCollection = amazonLocationDataConverter.placeToFeatureCollection(response);
 ```
 
 # Documentation
