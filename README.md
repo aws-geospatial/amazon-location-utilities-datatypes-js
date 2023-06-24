@@ -10,7 +10,7 @@ Install this library from NPM for usage with modules:
 npm install @aws/amazon-location-utilities-datatypes
 ```
 
-Importing in an HTML file for usage directly in the browser using the Amazon Location SDK script. The Amazon Location SDK is based on the [AWS SDK for JavaScript V3](https://github.com/aws/aws-sdk-js-v3), which allows the use of making calls to Amazon Location through the script added into the HTML file.
+Importing in an HTML file for usage directly in the browser using the Amazon Location Client script. The Amazon Location Client is based on the [AWS SDK for JavaScript V3](https://github.com/aws/aws-sdk-js-v3), which allows the use of making calls to Amazon Location through the script added into the HTML file.
 
 ```html
 <script src="TBA"></script>
@@ -43,21 +43,21 @@ const featureCollection = placeToFeatureCollection(response);
 
 ### Usage with the browser
 
-This example uses the Amazon Location SDK.
+This example uses the Amazon Location Client.
 
 Utility functions will be within `amazonLocationDataConverter`.
 
 ```html
-<!-- Importing Amazon Location SDK -->
+<!-- Importing Amazon Location Client -->
 <script src="TBA"></script>
 <!-- Importing the utility library from an HTML file -->
 <script src="TBA"></script>
 ```
 
 ```javascript
-const client = new amazonLocationSDK.LocationClient(config);
+const client = new amazonLocationClient.LocationClient(config);
 const input = { ... };
-const command = new amazonLocationSDK.SearchPlaceIndexForTextCommand(input);
+const command = new amazonLocationClient.SearchPlaceIndexForTextCommand(input);
 const response = await client.send(command);
 
 // Calling this utility function to convert the response to GeoJSON
