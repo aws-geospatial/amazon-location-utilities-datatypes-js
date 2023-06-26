@@ -23,18 +23,11 @@
     "Raymond Lee <imraylee@amazon.com>"
   ],
   "engines": {
-    "node": ">= 14.0.0"
+    "node": ">= 16.0.0"
   },
-  "main": "dist/js/index.js",
-  "module": "dist/es/index.js",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/es/index.js",
-      "require": "./dist/js/index.js"
-    }
-  },
-  "types": "dist/js/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
   "scripts": {
     "prettier": "prettier -w .",
     "prettier:check": "prettier -c .",
@@ -43,8 +36,11 @@
     "typedoc": "typedoc",
     "test": "jest --coverage",
     "build": "npm-run-all build:*",
-    "build:types": "tsc",
-    "build:rollup": "rollup -c && echo '{\"type\": \"module\"}' > dist/es/package.json",
+    "build:ts": "npm-run-all build-ts:*",
+    "build:bundle": "rollup -c",
+    "build-ts:types": "tsc --declaration --emitDeclarationOnly --outDir dist/types",
+    "build-ts:cjs": "tsc --module commonjs --outDir dist/cjs",
+    "build-ts:esm": "tsc --esModuleInterop --module esnext --outDir dist/esm",
     "prepare": "husky install"
   },
   "lint-staged": {
