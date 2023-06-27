@@ -1,8 +1,8 @@
 {
-  "name": "amazon-location-utilities-datatypes-js",
+  "name": "@aws/amazon-location-utilities-datatypes",
   "description": "Amazon Location Utilities - Data Types for JavaScript",
   "license": "Apache-2.0",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "keywords": [],
   "author": {
     "name": "Amazon Web Services",
@@ -23,19 +23,23 @@
     "Raymond Lee <imraylee@amazon.com>"
   ],
   "engines": {
-    "node": ">= 14.0.0"
+    "node": ">= 16.0.0"
   },
-  "main": "dist/js/index.js",
-  "module": "dist/es/index.js",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/es/index.js",
-      "require": "./dist/js/index.js"
-    }
-  },
-  "types": "dist/js/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "./LICENSE.txt",
+    "./LICENSE-THIRD-PARTY.txt",
+    "./CODE_OF_CONDUCT.md",
+    "./CONTRIBUTING.md",
+    "./Notice.txt",
+    "./README.md",
+    "./package.json",
+    "./dist"
+  ],
   "scripts": {
+    "clean": "rm -r dist",
     "prettier": "prettier -w .",
     "prettier:check": "prettier -c .",
     "lint": "eslint .",
@@ -43,9 +47,13 @@
     "typedoc": "typedoc",
     "test": "jest --coverage",
     "build": "npm-run-all build:*",
-    "build:types": "tsc",
-    "build:rollup": "rollup -c && echo '{\"type\": \"module\"}' > dist/es/package.json",
-    "prepare": "husky install"
+    "build:ts": "npm-run-all build-ts:*",
+    "build:bundle": "rollup -c",
+    "build-ts:types": "tsc --declaration --emitDeclarationOnly --outDir dist/types",
+    "build-ts:cjs": "tsc --module commonjs --outDir dist/cjs",
+    "build-ts:esm": "tsc --esModuleInterop --module esnext --outDir dist/esm",
+    "prepare": "husky install",
+    "prepublishOnly": "npm-run-all clean lint prettier:check test build"
   },
   "lint-staged": {
     "*.{js,ts}": [

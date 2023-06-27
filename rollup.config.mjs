@@ -1,10 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import resolve from "@rollup/plugin-node-resolve";
-import babel from "@rollup/plugin-babel";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import { getBabelOutputPlugin } from "@rollup/plugin-babel";
 
-const extensions = [".js", ".ts"];
 const banner = `
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
@@ -12,32 +11,25 @@ const banner = `
 `;
 
 export default {
-  input: "./src/index.ts",
+  input: "./dist/esm/index.js",
   plugins: [
-    resolve({ extensions }),
-    babel({
-      extensions,
-      babelHelpers: "bundled",
-      include: ["src/**/*"],
+    nodeResolve({
+      browser: true,
     }),
   ],
 
   output: [
     {
-      file: "dist/js/index.js",
-      format: "cjs",
-      banner,
-    },
-    {
-      file: "dist/es/index.js",
+      file: "dist/amazonLocationDataConverter.js",
       format: "esm",
       banner,
-    },
-    {
-      file: "dist/index.js",
-      format: "iife",
-      name: "amazonLocationDataConverter",
-      banner,
+      plugins: [
+        getBabelOutputPlugin({
+          minified: true,
+          moduleId: "amazonLocationDataConverter",
+          presets: [["@babel/env", { modules: "umd" }]],
+        }),
+      ],
     },
   ],
 };
