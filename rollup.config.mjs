@@ -7,7 +7,7 @@ import { getBabelOutputPlugin } from "@rollup/plugin-babel";
 const banner = `
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-// Third part license at https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/main/LICENSE-THIRD-PARTY
+// Third part license at https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/main/LICENSE-THIRD-PARTY.txt
 `;
 
 export default {
