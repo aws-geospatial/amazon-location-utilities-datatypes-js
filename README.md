@@ -10,10 +10,10 @@ Install this library from NPM for usage with modules:
 npm install @aws/amazon-location-utilities-datatypes
 ```
 
-Importing in an HTML file for usage directly in the browser using the Amazon Location Client script. The Amazon Location Client is based on the [AWS SDK for JavaScript V3](https://github.com/aws/aws-sdk-js-v3), which allows the use of making calls to Amazon Location through the script added into the HTML file.
+Importing in an HTML file for usage directly in the browser.
 
 ```html
-<script src="TBA"></script>
+<script src="https://www.unpkg.com/@aws/amazon-location-utilities-datatypes@%5E1.0.0/dist/amazonLocationDataConverter.js"></script>
 ```
 
 # Usage
@@ -43,15 +43,15 @@ const featureCollection = placeToFeatureCollection(response);
 
 ### Usage with the browser
 
-This example uses the Amazon Location Client.
+This example uses the Amazon Location Client. The Amazon Location Client is based on the [AWS SDK for JavaScript V3](https://github.com/aws/aws-sdk-js-v3), which allows the use of making calls to Amazon Location through the script added into the HTML file.
 
 Utility functions will be within `amazonLocationDataConverter`.
 
 ```html
 <!-- Importing Amazon Location Client -->
-<script src="TBA"></script>
+<script src="https://www.unpkg.com/@aws/amazon-location-client@%5E1.0.0/dist/amazonLocationClient.js"></script>
 <!-- Importing the utility library from an HTML file -->
-<script src="TBA"></script>
+<script src="https://www.unpkg.com/@aws/amazon-location-utilities-datatypes@%5E1.0.0/dist/amazonLocationDataConverter.js"></script>
 ```
 
 ```javascript
