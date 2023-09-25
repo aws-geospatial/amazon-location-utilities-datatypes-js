@@ -34,17 +34,15 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            Place: {
-              AddressNumber: "111",
-              Country: "CAN",
-              Label: "Test Place",
-              Municipality: "Vancouver",
-              Neighborhood: "Downtown",
-              PostalCode: "V6C",
-              Region: "British Columbia",
-              Street: "Burrard St",
-              SubRegion: "Metro Vancouver",
-            },
+            AddressNumber: "111",
+            Country: "CAN",
+            Label: "Test Place",
+            Municipality: "Vancouver",
+            Neighborhood: "Downtown",
+            PostalCode: "V6C",
+            Region: "British Columbia",
+            Street: "Burrard St",
+            SubRegion: "Metro Vancouver",
           },
           geometry: {
             type: "Point",
@@ -79,7 +77,6 @@ describe("placeToFeatureCollection", () => {
             },
             AddressNumber: "609",
           },
-          Distance: 1,
         },
         {
           Place: {
@@ -99,9 +96,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "abc",
           properties: {
-            Place: {
-              AddressNumber: "1050",
-            },
+            AddressNumber: "1050",
           },
           geometry: {
             type: "Point",
@@ -111,10 +106,7 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            Place: {
-              AddressNumber: "609",
-            },
-            Distance: 1,
+            AddressNumber: "609",
           },
           geometry: {
             type: "Point",
@@ -125,9 +117,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "def",
           properties: {
-            Place: {
-              AddressNumber: "575",
-            },
+            AddressNumber: "575",
           },
           geometry: {
             type: "Point",
@@ -185,10 +175,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "abc",
           properties: {
-            Place: {
-              AddressNumber: "1050",
-            },
-            Distance: 0,
+            AddressNumber: "1050",
           },
           geometry: {
             type: "Point",
@@ -199,10 +186,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "def",
           properties: {
-            Place: {
-              AddressNumber: "609",
-            },
-            Distance: 1,
+            AddressNumber: "609",
           },
           geometry: {
             type: "Point",
@@ -213,10 +197,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "ghi",
           properties: {
-            Place: {
-              AddressNumber: "575",
-            },
-            Distance: 2,
+            AddressNumber: "575",
           },
           geometry: {
             type: "Point",
@@ -267,9 +248,7 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            Place: {
-              AddressNumber: "1050",
-            },
+            AddressNumber: "1050",
           },
           geometry: {
             type: "Point",
@@ -279,9 +258,7 @@ describe("placeToFeatureCollection", () => {
         {
           type: "Feature",
           properties: {
-            Place: {
-              AddressNumber: "575",
-            },
+            AddressNumber: "575",
           },
           geometry: {
             type: "Point",
