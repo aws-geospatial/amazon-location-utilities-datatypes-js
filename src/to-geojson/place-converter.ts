@@ -303,13 +303,13 @@ function convertPlaceToFeature(
     const feature: Feature<Point | null> = {
       type: "Feature",
       id: "PlaceId" in place ? place.PlaceId : undefined,
-      properties: { ...place },
+      properties: { ...place.Place },
       geometry: {
         type: "Point",
         coordinates: coordinates,
       },
     };
-    delete feature.properties.Place.Geometry;
+    delete feature.properties.Geometry;
     if ("PlaceId" in feature.properties) {
       delete feature.properties.PlaceId;
     }
