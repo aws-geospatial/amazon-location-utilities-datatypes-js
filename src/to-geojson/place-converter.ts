@@ -117,17 +117,15 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *     {
  *       "type": "Feature",
  *       "properties": {
- *         "Place": {
- *           "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC, V6G 1C8, CAN",
- *           "AddressNumber": "1675",
- *           "Street": "Robson St",
- *           "Municipality": "Vancouver",
- *           "SubRegion": "Greater Vancouver",
- *           "Region": "British Columbia",
- *           "Country": "CAN",
- *           "PostalCode": "V6G 1C8",
- *           "Interpolated": false
- *         }
+ *         "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC, V6G 1C8, CAN",
+ *         "AddressNumber": "1675",
+ *         "Street": "Robson St",
+ *         "Municipality": "Vancouver",
+ *         "SubRegion": "Greater Vancouver",
+ *         "Region": "British Columbia",
+ *         "Country": "CAN",
+ *         "PostalCode": "V6G 1C8",
+ *         "Interpolated": false
  *       },
  *       "geometry": {
  *         "type": "Point",
@@ -218,23 +216,20 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *       "type": "Feature",
  *       "id": "AQAAAHAArZ9I7WtFD",
  *       "properties": {
- *         "Place": {
- *           "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
- *           "AddressNumber": "1675",
- *           "Street": "Robson St",
- *           "Neighborhood": "West End",
- *           "Municipality": "Vancouver",
- *           "SubRegion": "Metro Vancouver",
- *           "Region": "British Columbia",
- *           "Country": "CAN",
- *           "PostalCode": "V6G 1C8",
- *           "Interpolated": false,
- *           "TimeZone": {
- *             "Name": "America/Vancouver",
- *             "Offset": -25200
- *           }
- *         },
- *         "Distance": 1385.945532454018
+ *         "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
+ *         "AddressNumber": "1675",
+ *         "Street": "Robson St",
+ *         "Neighborhood": "West End",
+ *         "Municipality": "Vancouver",
+ *         "SubRegion": "Metro Vancouver",
+ *         "Region": "British Columbia",
+ *         "Country": "CAN",
+ *         "PostalCode": "V6G 1C8",
+ *         "Interpolated": false,
+ *         "TimeZone": {
+ *           "Name": "America/Vancouver",
+ *           "Offset": -25200
+ *         }
  *       },
  *       "geometry": {
  *         "type": "Point",
@@ -245,23 +240,20 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *       "type": "Feature",
  *       "id": "AQAAAHAAo5aDp0fMX",
  *       "properties": {
- *         "Place": {
- *           "Label": "Whole Foods, 925 Main St, West Vancouver, BC V7T, Canada",
- *           "AddressNumber": "925",
- *           "Street": "Main St",
- *           "Neighborhood": "Capilano Indian Reserve 5",
- *           "Municipality": "West Vancouver",
- *           "SubRegion": "Metro Vancouver",
- *           "Region": "British Columbia",
- *           "Country": "CAN",
- *           "PostalCode": "V7T",
- *           "Interpolated": false,
- *           "TimeZone": {
- *             "Name": "America/Vancouver",
- *             "Offset": -25200
- *           }
- *         },
- *         "Distance": 3876.5708436735226
+ *         "Label": "Whole Foods, 925 Main St, West Vancouver, BC V7T, Canada",
+ *         "AddressNumber": "925",
+ *         "Street": "Main St",
+ *         "Neighborhood": "Capilano Indian Reserve 5",
+ *         "Municipality": "West Vancouver",
+ *         "SubRegion": "Metro Vancouver",
+ *         "Region": "British Columbia",
+ *         "Country": "CAN",
+ *         "PostalCode": "V7T",
+ *         "Interpolated": false,
+ *         "TimeZone": {
+ *           "Name": "America/Vancouver",
+ *           "Offset": -25200
+ *         }
  *       },
  *       "geometry": {
  *         "type": "Point",
