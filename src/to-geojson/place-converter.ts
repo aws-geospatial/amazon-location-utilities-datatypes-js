@@ -108,7 +108,7 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  * }
  * ```
  *
- * Output:
+ * Output flattenProperties is false:
  *
  * ```json
  * {
@@ -117,15 +117,45 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *     {
  *       "type": "Feature",
  *       "properties": {
- *         "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC, V6G 1C8, CAN",
- *         "AddressNumber": "1675",
- *         "Street": "Robson St",
- *         "Municipality": "Vancouver",
- *         "SubRegion": "Greater Vancouver",
- *         "Region": "British Columbia",
- *         "Country": "CAN",
- *         "PostalCode": "V6G 1C8",
- *         "Interpolated": false
+ *         "Place": {
+ *           "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC, V6G 1C8, CAN",
+ *           "AddressNumber": "1675",
+ *           "Street": "Robson St",
+ *           "Municipality": "Vancouver",
+ *           "SubRegion": "Greater Vancouver",
+ *           "Region": "British Columbia",
+ *           "Country": "CAN",
+ *           "PostalCode": "V6G 1C8",
+ *           "Interpolated": false
+ *         }
+ *       },
+ *       "geometry": {
+ *         "type": "Point",
+ *         "coordinates": [-123.13, 49.28]
+ *       }
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * - Output flattenProperties is true:
+ *
+ * ```json
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [
+ *     {
+ *       "type": "Feature",
+ *       "properties": {
+ *         "Place.Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC, V6G 1C8, CAN",
+ *         "Place.AddressNumber": "1675",
+ *         "Place.Street": "Robson St",
+ *         "Place.Municipality": "Vancouver",
+ *         "Place.SubRegion": "Greater Vancouver",
+ *         "Place.Region": "British Columbia",
+ *         "Place.Country": "CAN",
+ *         "Place.PostalCode": "V6G 1C8",
+ *         "Place.Interpolated": false
  *       },
  *       "geometry": {
  *         "type": "Point",
@@ -206,7 +236,7 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  * }
  * ```
  *
- * Output:
+ * Output flattenProperties is true:
  *
  * ```json
  * {
@@ -216,20 +246,19 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *       "type": "Feature",
  *       "id": "AQAAAHAArZ9I7WtFD",
  *       "properties": {
- *         "Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
- *         "AddressNumber": "1675",
- *         "Street": "Robson St",
- *         "Neighborhood": "West End",
- *         "Municipality": "Vancouver",
- *         "SubRegion": "Metro Vancouver",
- *         "Region": "British Columbia",
- *         "Country": "CAN",
- *         "PostalCode": "V6G 1C8",
- *         "Interpolated": false,
- *         "TimeZone": {
- *           "Name": "America/Vancouver",
- *           "Offset": -25200
- *         }
+ *          "Distance": 1385.945532454018
+ *          "Place.Label": "Whole Foods Market, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
+ *          "Place.AddressNumber": "1675",
+ *          "Place.Street": "Robson St",
+ *          "Place.Neighborhood": "West End",
+ *          "Place.Municipality": "Vancouver",
+ *          "Place.SubRegion": "Metro Vancouver",
+ *          "Place.Region": "British Columbia",
+ *          "Place.Country": "CAN",
+ *          "Place.PostalCode": "V6G 1C8",
+ *          "Place.Interpolated": false,
+ *          "Place.TimeZone.Name": "America/Vancouver",
+ *          "Place.TimeZone.Offset": -25200
  *       },
  *       "geometry": {
  *         "type": "Point",
@@ -240,20 +269,19 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *       "type": "Feature",
  *       "id": "AQAAAHAAo5aDp0fMX",
  *       "properties": {
- *         "Label": "Whole Foods, 925 Main St, West Vancouver, BC V7T, Canada",
- *         "AddressNumber": "925",
- *         "Street": "Main St",
- *         "Neighborhood": "Capilano Indian Reserve 5",
- *         "Municipality": "West Vancouver",
- *         "SubRegion": "Metro Vancouver",
- *         "Region": "British Columbia",
- *         "Country": "CAN",
- *         "PostalCode": "V7T",
- *         "Interpolated": false,
- *         "TimeZone": {
- *           "Name": "America/Vancouver",
- *           "Offset": -25200
- *         }
+ *          "Distance": 3876.5708436735226
+ *          "Place.Label": "Whole Foods, 925 Main St, West Vancouver, BC V7T, Canada",
+ *          "Place.AddressNumber": "925",
+ *          "Place.Street": "Main St",
+ *          "Place.Neighborhood": "Capilano Indian Reserve 5",
+ *          "Place.Municipality": "West Vancouver",
+ *          "Place.SubRegion": "Metro Vancouver",
+ *          "Place.Region": "British Columbia",
+ *          "Place.Country": "CAN",
+ *          "Place.PostalCode": "V7T",
+ *          "Place.Interpolated": false,
+ *          "Place.TimeZone.Name": "America/Vancouver",
+ *          "Place.TimeZone.Offset": -25200
  *       },
  *       "geometry": {
  *         "type": "Point",
@@ -265,16 +293,18 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  * ```
  *
  * @param place Response of the GetPlace or SearchPlace* API.
+ * @param options Options for flattening the properties.
  * @returns A GeoJSON FeatureCollection
  */
 export function placeToFeatureCollection(
   place: GetPlaceResponse | SearchPlaceIndexForPositionResponse | SearchPlaceIndexForTextResponse,
+  options?: { flattenProperties?: boolean },
 ): FeatureCollection<Point> {
   if ("Results" in place) {
-    const features = place.Results.map((result) => result && convertPlaceToFeature(result));
+    const features = place.Results.map((result) => result && convertPlaceToFeature(result, options));
     return toFeatureCollection(features);
   } else if ("Place" in place) {
-    const features = [convertPlaceToFeature(place)];
+    const features = [convertPlaceToFeature(place, options)];
     return toFeatureCollection(features);
   } else {
     return emptyFeatureCollection();
@@ -285,26 +315,50 @@ export function placeToFeatureCollection(
  * Convert an Amazon Location Place object to a GeoJSON Feature.
  *
  * @param place The Place object from Amazon Location SDK.
+ * @param options Options for flattening the properties.
  * @returns A GeoJSON Feature of the Place object, or null if there isn't the Geometry.Point property present.
  */
 function convertPlaceToFeature(
   place: GetPlaceResponse | SearchForPositionResult | SearchForTextResult,
+  options?: { flattenProperties?: boolean },
 ): Feature<Point> | null {
   const coordinates = place.Place?.Geometry?.Point;
   if (coordinates) {
+    const placeClone = { ...place };
+    delete placeClone.Place?.Geometry;
+    if ("PlaceId" in placeClone) {
+      delete placeClone.PlaceId;
+    }
+    const properties = options?.flattenProperties ? flattenProperties({ ...placeClone }) : { ...placeClone };
     const feature: Feature<Point | null> = {
       type: "Feature",
       id: "PlaceId" in place ? place.PlaceId : undefined,
-      properties: { ...place.Place },
+      properties: properties,
       geometry: {
         type: "Point",
         coordinates: coordinates,
       },
     };
-    delete feature.properties.Geometry;
-    if ("PlaceId" in feature.properties) {
-      delete feature.properties.PlaceId;
-    }
     return feature;
   }
+  return null;
+}
+
+/**
+ * Optionally flatten the Amazon Location Place object.
+ *
+ * @param obj Amazon Location Place object.
+ * @returns Flattened objects.
+ */
+function flattenProperties(obj: Record<string, unknown>, prefix = ""): Record<string, unknown> {
+  return Object.keys(obj).reduce((acc: Record<string, unknown>, key: string) => {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    const value = obj[key];
+    if (value && typeof value === "object" && key !== "Geometry") {
+      Object.assign(acc, flattenProperties(value as Record<string, unknown>, newKey));
+    } else {
+      acc[newKey] = value;
+    }
+    return acc;
+  }, {});
 }
