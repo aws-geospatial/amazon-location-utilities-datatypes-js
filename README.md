@@ -118,10 +118,18 @@ Converts [places search](https://docs.aws.amazon.com/location/latest/developergu
 
 1. GetPlaceResponse to a FeatureCollection with a single feature.
 2. SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to a FeatureCollection with features corresponding to the entries in the response.
+3. The flattenProperties option will flatten the JSON response in properties.This option is mainly used when retrieving "MapLibre GL JS" attributes.
 
 ```javascript
 const response = { ... };
 const featureCollection = placeToFeatureCollection(response)
+```
+
+```javascript
+const response = { ... };
+const featureCollection = placeToFeatureCollection(response, {
+    flattenProperties: true
+});
 ```
 
 ### routeToFeatureCollection
