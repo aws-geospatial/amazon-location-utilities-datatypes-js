@@ -136,9 +136,18 @@ const featureCollection = placeToFeatureCollection(response, {
 
 Converts a [route](https://docs.aws.amazon.com/location/latest/developerguide/route-concepts.html) to a GeoJSON FeatureCollection with a single MultiLineString Feature. Each LineString entry of the MultiLineString represents a leg of the route.
 
+The flattenProperties option will flatten the JSON response in properties.This option is mainly used when retrieving "MapLibre GL JS" attributes.
+
 ```javascript
 const response = { ... };
 const featureCollection = routeToFeatureCollection(response)
+```
+
+```javascript
+const response = { ... };
+const featureCollection = placeToFeatureCollection(response, {
+    flattenProperties: true
+});
 ```
 
 ## Error Handling

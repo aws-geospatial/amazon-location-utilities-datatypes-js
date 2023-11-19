@@ -62,7 +62,7 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  * }
  * ```
  *
- * Output:
+ * Output flattenProperties is false:
  *
  * ```json
  * {
@@ -75,9 +75,42 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *           "DataSource": "Esri",
  *           "Distance": 1,
  *           "DistanceUnit": "Kilometers",
- *           "DurationSeconds": 30,
- *           "RouteBBox": [-123.149, 49.289, -123.141, 49.287]
+ *           "DurationSeconds": 30
  *         }
+ *       },
+ *       "geometry": {
+ *         "type": "MultiLineString",
+ *         "coordinates": [
+ *           [
+ *             [123.0, 11.0],
+ *             [123.5, 11.5],
+ *             [123.0, 12.0]
+ *           ],
+ *           [
+ *             [123.0, 12.0],
+ *             [123.5, 13.5],
+ *             [123.0, 14.0]
+ *           ]
+ *         ]
+ *       }
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * - Output flattenProperties is true:
+ *
+ * ```json
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [
+ *     {
+ *       "type": "Feature",
+ *       "properties": {
+ *         "DataSource": "Esri",
+ *         "Distance": 1,
+ *         "DistanceUnit": "Kilometers",
+ *         "DurationSeconds": 30
  *       },
  *       "geometry": {
  *         "type": "MultiLineString",
@@ -152,7 +185,7 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  * }
  * ```
  *
- * Output:
+ * Output flattenProperties is false:
  *
  * ```json
  * {
@@ -165,8 +198,7 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *           "DataSource": "Esri",
  *           "Distance": 1,
  *           "DistanceUnit": "Kilometers",
- *           "DurationSeconds": 30,
- *           "RouteBBox": [-123.149, 49.289, -123.141, 49.287]
+ *           "DurationSeconds": 30
  *         }
  *       },
  *       "geometry": {
@@ -188,26 +220,92 @@ import { emptyFeatureCollection, toFeatureCollection } from "./utils";
  *   ]
  * }
  * ```
+ *
+ * - Output flattenProperties is true:
+ *
+ * ```json
+ * {
+ *   "type": "FeatureCollection",
+ *   "features": [
+ *     {
+ *       "type": "Feature",
+ *       "properties": {
+ *         "DataSource": "Esri",
+ *         "Distance": 1,
+ *         "DistanceUnit": "Kilometers",
+ *         "DurationSeconds": 30
+ *       },
+ *       "geometry": {
+ *         "type": "MultiLineString",
+ *         "coordinates": [
+ *           [
+ *             [123.0, 11.0],
+ *             [123.5, 11.5],
+ *             [123.0, 12.0]
+ *           ],
+ *           [
+ *             [123.0, 13.0],
+ *             [123.5, 13.5],
+ *             [123.0, 14.0]
+ *           ]
+ *         ]
+ *       }
+ *     }
+ *   ]
+ * }
+ * ```
  */
-export function routeToFeatureCollection(route: CalculateRouteResponse): FeatureCollection<MultiLineString> {
-  const { Legs, Summary } = route;
-  if (Legs) {
-    const legs = Legs.map((leg) => leg.Geometry?.LineString);
 
-    const feature: Feature<MultiLineString> = {
-      type: "Feature",
-      properties: { Summary },
-      bbox: route?.Summary?.RouteBBox as BBox,
-      geometry: {
-        type: "MultiLineString",
-        coordinates: legs.filter((leg) => leg),
-      },
-    };
-    if (route.Summary && "RouteBBox" in route.Summary) {
-      delete feature.properties.Summary.RouteBBox;
+export function routeToFeatureCollection(
+  route: CalculateRouteResponse,
+  options?: { flattenProperties?: boolean },
+): FeatureCollection<MultiLineString> {
+  const { Legs } = route;
+  return Legs ? toFeatureCollection([convertRouteToFeature(route, options)]) : emptyFeatureCollection();
+}
+
+/**
+ * Convert an Amazon Location Service route object to a GeoJSON Feature.
+ *
+ * @param route The route object from Amazon Location Service.
+ * @returns A GeoJSON Feature of the route object.
+ */
+function convertRouteToFeature(
+  route: CalculateRouteResponse,
+  options?: { flattenProperties?: boolean },
+): Feature<MultiLineString> {
+  const processedLegs = route.Legs.map((leg) => leg.Geometry?.LineString).filter((leg) => leg);
+  const properties = options?.flattenProperties
+    ? flattenProperties(route.Summary, "")
+    : route.Summary
+    ? { Summary: { ...route.Summary, RouteBBox: undefined } }
+    : {};
+  delete properties.RouteBBox;
+  return {
+    type: "Feature",
+    properties: properties,
+    bbox: route.Summary?.RouteBBox as BBox,
+    geometry: {
+      type: "MultiLineString",
+      coordinates: processedLegs,
+    },
+  };
+}
+
+/**
+ * Optionally flatten the Amazon Location Service route summary object.
+ *
+ * @param obj Amazon Location Service route summary object.
+ * @returns Flattened object.
+ */
+function flattenProperties<T>(obj: T, prefix: string): Record<string, unknown> {
+  return Object.entries(obj as Record<string, unknown>).reduce((acc, [key, value]) => {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      return { ...acc, ...flattenProperties(value, newKey) };
+    } else {
+      acc[newKey] = value;
+      return acc;
     }
-    return toFeatureCollection([feature]);
-  } else {
-    return emptyFeatureCollection();
-  }
+  }, {});
 }
