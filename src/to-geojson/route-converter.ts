@@ -275,11 +275,12 @@ function convertRouteToFeature(
   options?: { flattenProperties?: boolean },
 ): Feature<MultiLineString> {
   const processedLegs = route.Legs.map((leg) => leg.Geometry?.LineString).filter((leg) => leg);
-  const properties = options?.flattenProperties
-    ? flattenProperties(route.Summary, "")
-    : route.Summary
-    ? { Summary: { ...route.Summary, RouteBBox: undefined } }
-    : {};
+  let properties: Record<string, unknown> = {};
+  if (options?.flattenProperties) {
+    properties = flattenProperties(route.Summary, "");
+  } else if (route.Summary) {
+    properties.Summary = { ...route.Summary, RouteBBox: undefined };
+  }
   delete properties.RouteBBox;
   return {
     type: "Feature",
