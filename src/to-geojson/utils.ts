@@ -20,6 +20,28 @@ export function toFeatureCollection<T extends Point | MultiLineString | Polygon>
   };
 }
 
+/**
+ * Optionally flatten the Amazon Location Service object.
+ *
+ * @param obj Amazon Location Service object.
+ * @returns Flattened object.
+ */
+export function flattenProperties(obj: unknown, prefix = ""): Record<string, unknown> {
+  if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
+    return {};
+  }
+  const result: Record<string, unknown> = {};
+  Object.entries(obj).forEach(([key, value]) => {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "object" && value !== null && !Array.isArray(value) && key !== "Geometry") {
+      Object.assign(result, flattenProperties(value, newKey));
+    } else {
+      result[newKey] = value;
+    }
+  });
+  return result;
+}
+
 export function emptyFeatureCollection<T extends Geometry>(): FeatureCollection<T> {
   return {
     type: "FeatureCollection",

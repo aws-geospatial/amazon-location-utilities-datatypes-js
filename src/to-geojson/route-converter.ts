@@ -3,7 +3,7 @@
 
 import { BBox, Feature, FeatureCollection, MultiLineString } from "geojson";
 import { CalculateRouteResponse } from "@aws-sdk/client-location";
-import { emptyFeatureCollection, toFeatureCollection } from "./utils";
+import { emptyFeatureCollection, toFeatureCollection, flattenProperties } from "./utils";
 
 /**
  * It converts a route to a GeoJSON FeatureCollection with a single MultiStringLine Feature, each LineString entry of
@@ -291,22 +291,4 @@ function convertRouteToFeature(
       coordinates: processedLegs,
     },
   };
-}
-
-/**
- * Optionally flatten the Amazon Location Service route summary object.
- *
- * @param obj Amazon Location Service route summary object.
- * @returns Flattened object.
- */
-function flattenProperties<T>(obj: T, prefix: string): Record<string, unknown> {
-  return Object.entries(obj as Record<string, unknown>).reduce((acc, [key, value]) => {
-    const newKey = prefix ? `${prefix}.${key}` : key;
-    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      return { ...acc, ...flattenProperties(value, newKey) };
-    } else {
-      acc[newKey] = value;
-      return acc;
-    }
-  }, {});
 }

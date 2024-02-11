@@ -9,7 +9,7 @@ import {
   SearchPlaceIndexForPositionResponse,
   SearchPlaceIndexForTextResponse,
 } from "@aws-sdk/client-location";
-import { emptyFeatureCollection, toFeatureCollection } from "./utils";
+import { emptyFeatureCollection, toFeatureCollection, flattenProperties } from "./utils";
 
 /**
  * It converts place responses to a FeatureCollection with Point Features. It converts
@@ -342,23 +342,4 @@ function convertPlaceToFeature(
     return feature;
   }
   return null;
-}
-
-/**
- * Optionally flatten the Amazon Location Place object.
- *
- * @param obj Amazon Location Place object.
- * @returns Flattened objects.
- */
-function flattenProperties(obj: Record<string, unknown>, prefix = ""): Record<string, unknown> {
-  return Object.keys(obj).reduce((acc: Record<string, unknown>, key: string) => {
-    const newKey = prefix ? `${prefix}.${key}` : key;
-    const value = obj[key];
-    if (value && typeof value === "object" && key !== "Geometry") {
-      Object.assign(acc, flattenProperties(value as Record<string, unknown>, newKey));
-    } else {
-      acc[newKey] = value;
-    }
-    return acc;
-  }, {});
 }
