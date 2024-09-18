@@ -2,7 +2,7 @@
   "name": "@aws/amazon-location-utilities-datatypes",
   "description": "Amazon Location Utilities - Data Types for JavaScript",
   "license": "Apache-2.0",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "keywords": [],
   "author": {
     "name": "Amazon Web Services",
@@ -63,6 +63,8 @@
     "!(*.{js,ts})": "prettier --write --ignore-unknown"
   },
   "dependencies": {
+    "@aws-sdk/client-geoplaces": "file:temp_clients/amzn-geoplaces-client-0.0.1.tgz",
+    "@aws-sdk/client-georoutes": "file:temp_clients/amzn-georoutes-client-0.0.1.tgz",
     "@aws-sdk/client-location": "^3.621.0",
     "@turf/circle": "^6.5.0",
     "@types/geojson": "^7946.0.10"
