@@ -18,31 +18,6 @@ import {
 import { placeToFeatureCollection } from "./place-converter";
 import { FeatureCollection } from "geojson";
 import { emptyFeatureCollection } from "./utils";
-import {
-  AccessPoint,
-  AccessRestriction,
-  Address,
-  BusinessChain,
-  Category,
-  Contacts,
-  FoodType,
-  OpeningHours,
-  OpeningHoursComponents,
-  PhonemeDetails,
-  PlaceType,
-  PostalCodeDetails,
-  QueryRefinement,
-  QueryType,
-  ReverseGeocodeResultItem,
-  SearchNearbyResultItem,
-  SearchTextResultItem,
-  SuggestHighlights,
-  SuggestPlaceResult,
-  SuggestQueryResult,
-  SuggestResultItem,
-  SuggestResultItemType,
-  TimeZone,
-} from "@aws-sdk/client-geoplaces/src/models/models_0";
 
 describe("placeToFeatureCollection", () => {
   it("should convert GetPlaceResponse to a FeatureCollection with a single feature and nested properties when flattenProperties is false or undefined", () => {
