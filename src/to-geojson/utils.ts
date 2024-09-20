@@ -16,7 +16,7 @@ export function toFeatureCollection<T extends Point | MultiLineString | Polygon>
 ): FeatureCollection<T> {
   return {
     type: "FeatureCollection",
-    features: features.filter((feature) => feature),
+    features: features ? features.filter((feature) => feature) : [],
   };
 }
 
