@@ -27,13 +27,13 @@ export function toFeatureCollection<T extends Point | MultiLineString | Polygon>
  * @returns Flattened object.
  */
 export function flattenProperties(obj: unknown, prefix = ""): Record<string, unknown> {
-  // The following fields are number[] arrays, but should be considered atomic datatypes, not lists of numbers,
+  // The following fields are arrays, but should be considered atomic datatypes, not lists of numbers,
   // so they shouldn't get flattened.
   const doNotFlattenList = [
+    // These are all number[] arrays that represent a coordinate.
     "Geometry",
     "Position",
     "Center",
-    "BoundingBox",
     "BiasPosition",
     "QueryPosition",
     "DeparturePosition",
@@ -47,24 +47,16 @@ export function flattenProperties(obj: unknown, prefix = ""): Record<string, unk
     "Origin",
     "OriginalPosition",
     "SnappedPosition",
+    "MapView",
+    // These are number[] arrays that represent the corners of a box.
+    "BoundingBox",
     "FilterBBox",
     "ResultBBox",
     "RouteBBox",
-    "MapView",
-    // LineString is actually a number[][] array, but we'll still treat it as an atomic datatype
+    // LineString is a number[][] array containing a list of points that make up a contiguous line
     "LineString",
-  ];
-
-  // The following fields are number[][] or number[][][] arrays that represent lists of arrays that should then
-  // be considered atomic, so only the first level gets flattened.
-  // Polygon is a list of LineString values, which is why it only gets flattened once.
-  const partialFlattenList = [
+    // Polygon is a number[][][] array that contains multiple LineStrings representing outer and inner rings
     "Polygon",
-    "WaypointPositions",
-    "DeparturePositions",
-    "DestinationPositions",
-    "SnappedDeparturePositions",
-    "SnappedDestinationPositions",
   ];
 
   // If we've ended up in here without a struct or array, something has gone wrong, so just return.
@@ -97,13 +89,6 @@ export function flattenProperties(obj: unknown, prefix = ""): Record<string, unk
           // For number[] values that represent a datatype like [lng, lat] instead of a list,
           // we'll keep them as-is without flattening.
           result[newKey] = value;
-        } else if (partialFlattenList.includes(key)) {
-          // For number[][] or number[][][] values that represent a list of datatypes, we'll flatten
-          // one level but not recurse through them.
-          for (const [index, entry] of value.entries()) {
-            const flattenKey = `${newKey}.${index}`;
-            result[flattenKey] = entry;
-          }
         } else {
           // For every other nested struct or array, recursively flatten it.
           Object.assign(result, flattenProperties(value, newKey));
