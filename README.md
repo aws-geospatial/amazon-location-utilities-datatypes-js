@@ -145,9 +145,65 @@ const featureCollection = routeToFeatureCollection(response)
 
 ```javascript
 const response = { ... };
-const featureCollection = placeToFeatureCollection(response, {
+const featureCollection = routeToFeatureCollection(response, {
     flattenProperties: true
 });
+```
+
+## Amazon Location GeoPlaces Data Types to GeoJSON
+
+### geocodeResponseToFeatureCollection
+
+Converts a Geocode response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+
+```javascript
+const response = { ... };
+const featureCollection = geocodeResponseToFeatureCollection(response)
+```
+
+### getPlaceResponseToFeatureCollection
+
+Converts a GetPlace response from the standalone Places SDK to a FeatureCollection with a Point Feature. If the response has no location information, an empty FeatureCollection will be returned. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+
+```javascript
+const response = { ... };
+const featureCollection = suggestTextResponseToFeatureCollection(response)
+```
+
+### reverseGeocodeResponseToFeatureCollection
+
+Converts a ReverseGeocode response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+
+```javascript
+const response = { ... };
+const featureCollection = reverseGeocodeResponseToFeatureCollection(response)
+```
+
+### searchNearbyResponseToFeatureCollection
+
+Converts a SearchNearby response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+
+```javascript
+const response = { ... };
+const featureCollection = searchNearbyResponseToFeatureCollection(response)
+```
+
+### searchTextResponseToFeatureCollection
+
+Converts a SearchText response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+
+```javascript
+const response = { ... };
+const featureCollection = searchTextResponseToFeatureCollection(response)
+```
+
+### suggestResponseToFeatureCollection
+
+Converts a Suggest response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+
+```javascript
+const response = { ... };
+const featureCollection = suggestTextResponseToFeatureCollection(response)
 ```
 
 ## Error Handling

@@ -6,6 +6,7 @@ import {
   SearchPlaceIndexForPositionResponse,
   SearchPlaceIndexForTextResponse,
 } from "@aws-sdk/client-location";
+
 import { placeToFeatureCollection } from "./place-converter";
 import { FeatureCollection } from "geojson";
 import { emptyFeatureCollection } from "./utils";
@@ -26,6 +27,7 @@ describe("placeToFeatureCollection", () => {
         Region: "British Columbia",
         Country: "CAN",
         PostalCode: "V6C",
+        Categories: ["store", "grocery", "POI"],
       },
     };
     const output: FeatureCollection = {
@@ -44,6 +46,7 @@ describe("placeToFeatureCollection", () => {
               Region: "British Columbia",
               Street: "Burrard St",
               SubRegion: "Metro Vancouver",
+              Categories: ["store", "grocery", "POI"],
             },
           },
           geometry: {
@@ -71,6 +74,7 @@ describe("placeToFeatureCollection", () => {
         Region: "British Columbia",
         Country: "CAN",
         PostalCode: "V6C",
+        Categories: ["store", "grocery", "POI"],
       },
     };
     const output: FeatureCollection = {
@@ -88,6 +92,9 @@ describe("placeToFeatureCollection", () => {
             "Place.Region": "British Columbia",
             "Place.Street": "Burrard St",
             "Place.SubRegion": "Metro Vancouver",
+            "Place.Categories.0": "store",
+            "Place.Categories.1": "grocery",
+            "Place.Categories.2": "POI",
           },
           geometry: {
             type: "Point",

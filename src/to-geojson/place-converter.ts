@@ -326,11 +326,12 @@ function convertPlaceToFeature(
   if (coordinates) {
     const placeClone = { ...place };
     delete placeClone.Place?.Geometry;
+    delete placeClone["$metadata"];
     if ("PlaceId" in placeClone) {
       delete placeClone.PlaceId;
     }
     const properties = options?.flattenProperties ? flattenProperties({ ...placeClone }) : { ...placeClone };
-    const feature: Feature<Point | null> = {
+    return {
       type: "Feature",
       id: "PlaceId" in place ? place.PlaceId : undefined,
       properties: properties,
@@ -339,7 +340,6 @@ function convertPlaceToFeature(
         coordinates: coordinates,
       },
     };
-    return feature;
   }
   return null;
 }
