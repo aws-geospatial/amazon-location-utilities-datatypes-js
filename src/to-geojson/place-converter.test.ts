@@ -149,6 +149,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "abc",
           properties: {
+            PlaceId: "abc",
             Place: {
               AddressNumber: "1050",
             },
@@ -175,6 +176,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "def",
           properties: {
+            PlaceId: "def",
             Place: {
               AddressNumber: "575",
             },
@@ -232,6 +234,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "abc",
           properties: {
+            PlaceId: "abc",
             "Place.AddressNumber": "1050",
           },
           geometry: {
@@ -254,6 +257,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "def",
           properties: {
+            PlaceId: "def",
             "Place.AddressNumber": "575",
           },
           geometry: {
@@ -312,6 +316,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "abc",
           properties: {
+            PlaceId: "abc",
             Place: {
               AddressNumber: "1050",
             },
@@ -326,6 +331,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "def",
           properties: {
+            PlaceId: "def",
             Place: {
               AddressNumber: "609",
             },
@@ -340,6 +346,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "ghi",
           properties: {
+            PlaceId: "ghi",
             Place: {
               AddressNumber: "575",
             },
@@ -401,6 +408,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "abc",
           properties: {
+            PlaceId: "abc",
             "Place.AddressNumber": "1050",
             Distance: 0,
           },
@@ -413,6 +421,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "def",
           properties: {
+            PlaceId: "def",
             "Place.AddressNumber": "609",
             Distance: 1,
           },
@@ -425,6 +434,7 @@ describe("placeToFeatureCollection", () => {
           type: "Feature",
           id: "ghi",
           properties: {
+            PlaceId: "ghi",
             "Place.AddressNumber": "575",
             Distance: 2,
           },
