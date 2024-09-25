@@ -18,8 +18,8 @@ import { emptyFeatureCollection, toFeatureCollection, flattenProperties } from "
  * 2. SearchPlaceIndexForPositionResponse, SearchPlaceIndexForTextResponse to a FeatureCollection with features
  *    corresponding to the entries in the response.
  *
- * `PlaceId` will be mapped to the `id` of the output Feature if `PlaceId` is provided. Fields other than `PlaceId` and
- * `Geometry` in a place will be mapped into the properties of the corresponding Feature.
+ * `PlaceId` will be mapped to the `id` of the output Feature if `PlaceId` is provided. Fields other than `Geometry` in
+ * a place will be mapped into the properties of the corresponding Feature.
  *
  * Any place without the `Point` field will be skipped.
  *
@@ -327,9 +327,6 @@ function convertPlaceToFeature(
     const placeClone = { ...place };
     delete placeClone.Place?.Geometry;
     delete placeClone["$metadata"];
-    if ("PlaceId" in placeClone) {
-      delete placeClone.PlaceId;
-    }
     const properties = options?.flattenProperties ? flattenProperties({ ...placeClone }) : { ...placeClone };
     return {
       type: "Feature",

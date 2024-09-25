@@ -49,8 +49,9 @@ describe("geocodeResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
           },
@@ -100,8 +101,9 @@ describe("geocodeResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
             Address: {
@@ -119,8 +121,9 @@ describe("geocodeResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Block",
             Title: "title2",
           },
@@ -131,8 +134,9 @@ describe("geocodeResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "ghi",
+          id: 2,
           properties: {
+            PlaceId: "ghi",
             PlaceType: "Block",
             Title: "title3",
           },
@@ -182,8 +186,9 @@ describe("geocodeResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
             "Address.StreetComponents.0.Suffix": "St",
@@ -195,8 +200,9 @@ describe("geocodeResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Block",
             Title: "title2",
           },
@@ -207,8 +213,9 @@ describe("geocodeResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "ghi",
+          id: 2,
           properties: {
+            PlaceId: "ghi",
             PlaceType: "Block",
             Title: "title3",
           },
@@ -269,8 +276,9 @@ describe("getPlaceResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Locality",
             Title: "Test Place",
             PricingBucket: "pricing bucket",
@@ -328,8 +336,9 @@ describe("getPlaceResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Locality",
             Title: "Test Place",
             PricingBucket: "pricing bucket",
@@ -386,8 +395,9 @@ describe("reverseGeocodeResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
           },
@@ -434,8 +444,9 @@ describe("reverseGeocodeResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Intersection",
             Title: "Test Place 1",
             Distance: 123.456,
@@ -455,8 +466,9 @@ describe("reverseGeocodeResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Locality",
             Title: "Test Place 2",
             Distance: 456.789,
@@ -504,8 +516,9 @@ describe("reverseGeocodeResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Intersection",
             Title: "Test Place 1",
             Distance: 123.456,
@@ -519,8 +532,9 @@ describe("reverseGeocodeResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Locality",
             Title: "Test Place 2",
             Distance: 456.789,
@@ -564,8 +578,9 @@ describe("searchNearbyResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
           },
@@ -608,8 +623,9 @@ describe("searchNearbyResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
             Address: {
@@ -623,8 +639,9 @@ describe("searchNearbyResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Block",
             Title: "Test Response",
             Address: {
@@ -670,8 +687,9 @@ describe("searchNearbyResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
             "Address.StreetComponents.0.Suffix": "St",
@@ -683,8 +701,9 @@ describe("searchNearbyResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Block",
             Title: "Test Response",
             "Address.StreetComponents.0.Prefix": "N",
@@ -728,8 +747,9 @@ describe("searchTextResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Block",
             Title: "title",
           },
@@ -774,8 +794,9 @@ describe("searchTextResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Country",
             Title: "Test Place 1",
             Distance: 123.456,
@@ -790,8 +811,9 @@ describe("searchTextResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Country",
             Title: "Test Place 2",
             Distance: 456.789,
@@ -840,8 +862,9 @@ describe("searchTextResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
+            PlaceId: "abc",
             PlaceType: "Country",
             Title: "Test Place 1",
             Distance: 123.456,
@@ -854,8 +877,9 @@ describe("searchTextResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: "def",
+          id: 1,
           properties: {
+            PlaceId: "def",
             PlaceType: "Country",
             Title: "Test Place 2",
             Distance: 456.789,
@@ -905,11 +929,12 @@ describe("suggestResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
             Title: "title1",
             SuggestResultItemType: "Place",
             Place: {
+              PlaceId: "abc",
               PlaceType: "Block",
             },
           },
@@ -970,11 +995,12 @@ describe("suggestResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
             Title: "Place Result 1 - good",
             SuggestResultItemType: "Place",
             Place: {
+              PlaceId: "abc",
               PlaceType: "Region",
               Distance: 123.456,
             },
@@ -986,6 +1012,7 @@ describe("suggestResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
+          id: 2,
           properties: {
             Title: "Place Result 2 - no place ID",
             SuggestResultItemType: "Place",
@@ -1051,10 +1078,11 @@ describe("suggestResponseToFeatureCollection", () => {
       features: [
         {
           type: "Feature",
-          id: "abc",
+          id: 0,
           properties: {
             Title: "Place Result 1 - good",
             SuggestResultItemType: "Place",
+            "Place.PlaceId": "abc",
             "Place.PlaceType": "Region",
             "Place.Distance": 123.456,
           },
@@ -1065,6 +1093,7 @@ describe("suggestResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
+          id: 2,
           properties: {
             Title: "Place Result 2 - no place ID",
             SuggestResultItemType: "Place",

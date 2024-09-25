@@ -15,9 +15,9 @@ import {
 import { toFeatureCollection, flattenProperties } from "./utils";
 
 /**
- * Convert GetPlaceResponse responses from our standalone Places SDK to a FeatureCollection with a Point Feature.
- * `PlaceId` is extracted as the `id` of the output Feature if `PlaceId` exists in the response. `Position` is extracted
- * as the location for the Point Feature. All other properties in the response are mapped into the Feature properties.
+ * Convert GetPlaceResponse responses from our standalone Places SDK to a FeatureCollection with a Point Feature. Each
+ * Feature is given a locally-unique integer id for easier use with MapLibre. `Position` is extracted as the location
+ * for the Point Feature. All other properties in the response are mapped into the Feature properties.
  *
  * If the result doesn't contain location information, the output will be an empty FeatureCollection.
  *
@@ -39,7 +39,7 @@ import { toFeatureCollection, flattenProperties } from "./utils";
  *         type: "FeatureCollection",
  *         features: [
  *           type: "Feature",
- *           id: response?.PlaceId,
+ *           id: 0,
  *           properties: {}, // translate the properties here
  *           geometry: {
  *             type: "Point",
@@ -269,7 +269,7 @@ import { toFeatureCollection, flattenProperties } from "./utils";
  *   "features": [
  *     {
  *       "type": "Feature",
- *       "id": "AQAAAFUAyxxcYKqlUYVtNfwVOz7yjB3RKYwaVIUAaKwve4Rhlr3M_t8eFffC2AxhWxhoUrY8orFocbsqCkB3yU8l4-ExvIBR3Iyi6lGu4uO3dZEWTYBkioJU1PS9HJ7fDcB9Ch1VJJQxrliB_pmDYYDqll99U6nr63Bh",
+ *       "id": 0,
  *       "properties": {
  *         "AccessPoints": [
  *           {
@@ -421,6 +421,7 @@ import { toFeatureCollection, flattenProperties } from "./utils";
  *             ]
  *           }
  *         ],
+ *         "PlaceId": "AQAAAFUAyxxcYKqlUYVtNfwVOz7yjB3RKYwaVIUAaKwve4Rhlr3M_t8eFffC2AxhWxhoUrY8orFocbsqCkB3yU8l4-ExvIBR3Iyi6lGu4uO3dZEWTYBkioJU1PS9HJ7fDcB9Ch1VJJQxrliB_pmDYYDqll99U6nr63Bh",
  *         "PlaceType": "PointOfInterest",
  *         "TimeZone": {
  *           "Name": "America/Vancouver",
@@ -449,7 +450,7 @@ import { toFeatureCollection, flattenProperties } from "./utils";
  *     "features": [
  *         {
  *             "type": "Feature",
- *             "id": "AQAAAFUAyxxcYKqlUYVtNfwVOz7yjB3RKYwaVIUAaKwve4Rhlr3M_t8eFffC2AxhWxhoUrY8orFocbsqCkB3yU8l4-ExvIBR3Iyi6lGu4uO3dZEWTYBkioJU1PS9HJ7fDcB9Ch1VJJQxrliB_pmDYYDqll99U6nr63Bh",
+ *             "id": 0,
  *             "properties": {
  *                 "AccessPoints.0.Position": [
  *                     -123.13303,
@@ -510,6 +511,7 @@ import { toFeatureCollection, flattenProperties } from "./utils";
  *                 "OpeningHours.0.Components.0.Recurrence": "FREQ:DAILY;BYDAY:MO,TU,WE,TH,SA,SU",
  *                 "OpeningHours.0.Categories.0.Id": "grocery",
  *                 "OpeningHours.0.Categories.0.Name": "Grocery",
+ *                 "PlaceId": "AQAAAFUAyxxcYKqlUYVtNfwVOz7yjB3RKYwaVIUAaKwve4Rhlr3M_t8eFffC2AxhWxhoUrY8orFocbsqCkB3yU8l4-ExvIBR3Iyi6lGu4uO3dZEWTYBkioJU1PS9HJ7fDcB9Ch1VJJQxrliB_pmDYYDqll99U6nr63Bh",
  *                 "PlaceType": "PointOfInterest",
  *                 "TimeZone.Name": "America/Vancouver",
  *                 "TimeZone.Offset": "-07:00",
@@ -539,8 +541,8 @@ export function getPlaceResponseToFeatureCollection(
   // Create a single feature in the feature collection with the entire response in the properties except
   // for PlaceId and Position, since these become the feature's id and geometry coordinates.
   /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-  const { PlaceId, Position, ...properties } = response;
-  return toFeatureCollection([createGeoJsonPointFeature(response.PlaceId, response.Position, properties, options)]);
+  const { Position, ...properties } = response;
+  return toFeatureCollection([createGeoJsonPointFeature(0, response.Position, properties, options)]);
 }
 
 /**
@@ -562,10 +564,10 @@ export function geocodeResponseToFeatureCollection(
   const features = response.ResultItems?.map(
     // Create a single feature in the feature collection for each result with the entire result in the properties except
     // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result) => {
+    (result, index) => {
       /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { PlaceId, Position, ...properties } = result;
-      return createGeoJsonPointFeature(result.PlaceId, result.Position, properties, options);
+      const { Position, ...properties } = result;
+      return createGeoJsonPointFeature(index, result.Position, properties, options);
     },
   );
   return toFeatureCollection(features);
@@ -590,10 +592,10 @@ export function reverseGeocodeResponseToFeatureCollection(
   const features = response.ResultItems?.map(
     // Create a single feature in the feature collection for each result with the entire result in the properties except
     // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result) => {
+    (result, index) => {
       /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { PlaceId, Position, ...properties } = result;
-      return createGeoJsonPointFeature(result.PlaceId, result.Position, properties, options);
+      const { Position, ...properties } = result;
+      return createGeoJsonPointFeature(index, result.Position, properties, options);
     },
   );
   return toFeatureCollection(features);
@@ -618,10 +620,10 @@ export function searchNearbyResponseToFeatureCollection(
   const features = response.ResultItems?.map(
     // Create a single feature in the feature collection for each result with the entire result in the properties except
     // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result) => {
+    (result, index) => {
       /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { PlaceId, Position, ...properties } = result;
-      return createGeoJsonPointFeature(result.PlaceId, result.Position, properties, options);
+      const { Position, ...properties } = result;
+      return createGeoJsonPointFeature(index, result.Position, properties, options);
     },
   );
   return toFeatureCollection(features);
@@ -646,10 +648,10 @@ export function searchTextResponseToFeatureCollection(
   const features = response.ResultItems?.map(
     // Create a single feature in the feature collection for each result with the entire result in the properties except
     // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result) => {
+    (result, index) => {
       /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { PlaceId, Position, ...properties } = result;
-      return createGeoJsonPointFeature(result.PlaceId, result.Position, properties, options);
+      const { Position, ...properties } = result;
+      return createGeoJsonPointFeature(index, result.Position, properties, options);
     },
   );
   return toFeatureCollection(features);
@@ -674,13 +676,12 @@ export function suggestResponseToFeatureCollection(
   const features = response.ResultItems?.map(
     // Create a single feature in the feature collection for each result with the entire result in the properties except
     // for Place.PlaceId and Place.Position, since these become the feature's id and geometry coordinates.
-    (result) => {
+    (result, index) => {
       // We use structuredClone here to make a deep copy to ensure that deleting from the nested
       // Place struct doesn't change the original value.
       const properties = structuredClone(result);
-      delete properties.Place?.PlaceId;
       delete properties.Place?.Position;
-      return createGeoJsonPointFeature(result.Place?.PlaceId, result.Place?.Position, properties, options);
+      return createGeoJsonPointFeature(index, result.Place?.Position, properties, options);
     },
   );
   return toFeatureCollection(features);
@@ -689,7 +690,7 @@ export function suggestResponseToFeatureCollection(
 /**
  * Creates a GeoJSON feature from a given id, coordinates, and Response structure.
  *
- * @param placeId The PlaceId extracted from the Response structure.
+ * @param placeId A unique integer to identify this feature in the FeatureCollection.
  * @param coordinates The coordinates to use for the Point, extracted from the Response structure.
  * @param properties The Response structure with the placeId and coordinates removed from it. The placeId and
  *   coordinates are expected to be removed because they would be redundant data since they already appear as the id and
@@ -698,7 +699,7 @@ export function suggestResponseToFeatureCollection(
  * @returns A GeoJSON Point Feature of the Response object, or null if no coordinates were present.
  */
 function createGeoJsonPointFeature(
-  placeId: string,
+  placeId: number,
   coordinates: number[],
   properties: object,
   options?: { flattenProperties?: boolean },
