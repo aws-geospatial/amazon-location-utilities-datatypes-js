@@ -19,7 +19,7 @@ import { decodeToLineString } from "@aws-geospatial/polyline";
  * - includeLegArrivalDeparturePositions: Creates Point Features for the arrival and departure positions of each leg of the route.
  * - includeTravelStepStartPositions: Creates a Point Feature for the start position of each travel step in the route.
  */
-export class CalculateRoutesResponseOptions {
+export interface CalculateRoutesResponseOptions {
   flattenProperties?: boolean;
   includeLegLines?: boolean;
   includeTravelStepLines?: boolean;

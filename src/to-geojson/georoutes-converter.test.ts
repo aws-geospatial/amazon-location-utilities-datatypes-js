@@ -6,24 +6,6 @@ import { calculateRoutesResponseToFeatureCollections } from "./georoutes-convert
 import { FeatureCollection } from "geojson";
 import { emptyFeatureCollection } from "./utils";
 import { encodeFromLngLatArray } from "@aws-geospatial/polyline";
-import {
-  RouteFerryAfterTravelStep,
-  RouteFerryArrival,
-  RouteFerryBeforeTravelStep,
-  RouteFerryDeparture,
-  RouteFerryNotice,
-  RouteFerrySpan,
-  RouteFerrySummary,
-  RouteFerryTravelStep,
-  RoutePassThroughWaypoint,
-  RoutePedestrianAfterTravelStep,
-  RoutePedestrianArrival,
-  RoutePedestrianDeparture,
-  RoutePedestrianNotice,
-  RoutePedestrianSpan,
-  RoutePedestrianSummary,
-  RoutePedestrianTravelStep,
-} from "@aws-sdk/client-georoutes/src/models/models_0";
 
 describe("calculateRoutesResponseToFeatureCollections", () => {
   it("should return empty FeatureCollection if Legs are missing geometry", () => {
