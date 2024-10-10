@@ -167,7 +167,7 @@ Converts a GetPlace response from the standalone Places SDK to a FeatureCollecti
 
 ```javascript
 const response = { ... };
-const featureCollection = suggestTextResponseToFeatureCollection(response)
+const featureCollection = getPlaceResponseToFeatureCollection(response)
 ```
 
 ### reverseGeocodeResponseToFeatureCollection
@@ -203,7 +203,7 @@ Converts a Suggest response from the standalone Places SDK to a FeatureCollectio
 
 ```javascript
 const response = { ... };
-const featureCollection = suggestTextResponseToFeatureCollection(response)
+const featureCollection = suggestResponseToFeatureCollection(response)
 ```
 
 ## Error Handling
