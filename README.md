@@ -154,7 +154,10 @@ const featureCollection = routeToFeatureCollection(response, {
 
 ### geocodeResponseToFeatureCollection
 
-Converts a Geocode response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+Converts a Geocode response from the standalone Places SDK to a FeatureCollection with Point
+Features. Only result items with location information will appear in the FeatureCollection.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
 
 ```javascript
 const response = { ... };
@@ -163,7 +166,10 @@ const featureCollection = geocodeResponseToFeatureCollection(response)
 
 ### getPlaceResponseToFeatureCollection
 
-Converts a GetPlace response from the standalone Places SDK to a FeatureCollection with a Point Feature. If the response has no location information, an empty FeatureCollection will be returned. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+Converts a GetPlace response from the standalone Places SDK to a FeatureCollection with a Point
+Feature. If the response has no location information, an empty FeatureCollection will be returned.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
 
 ```javascript
 const response = { ... };
@@ -172,7 +178,10 @@ const featureCollection = getPlaceResponseToFeatureCollection(response)
 
 ### reverseGeocodeResponseToFeatureCollection
 
-Converts a ReverseGeocode response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+Converts a ReverseGeocode response from the standalone Places SDK to a FeatureCollection with Point
+Features. Only result items with location information will appear in the FeatureCollection.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
 
 ```javascript
 const response = { ... };
@@ -181,7 +190,10 @@ const featureCollection = reverseGeocodeResponseToFeatureCollection(response)
 
 ### searchNearbyResponseToFeatureCollection
 
-Converts a SearchNearby response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+Converts a SearchNearby response from the standalone Places SDK to a FeatureCollection with Point
+Features. Only result items with location information will appear in the FeatureCollection.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
 
 ```javascript
 const response = { ... };
@@ -190,7 +202,10 @@ const featureCollection = searchNearbyResponseToFeatureCollection(response)
 
 ### searchTextResponseToFeatureCollection
 
-Converts a SearchText response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+Converts a SearchText response from the standalone Places SDK to a FeatureCollection with Point
+Features. Only result items with location information will appear in the FeatureCollection.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
 
 ```javascript
 const response = { ... };
@@ -199,11 +214,113 @@ const featureCollection = searchTextResponseToFeatureCollection(response)
 
 ### suggestResponseToFeatureCollection
 
-Converts a Suggest response from the standalone Places SDK to a FeatureCollection with Point Features. Only result items with location information will appear in the FeatureCollection. The `flattenProperties` option will flatten the nested response data into a flat properties list. This option is mainly used when retrieving "MapLibre GL JS" attributes.
+Converts a Suggest response from the standalone Places SDK to a FeatureCollection with Point
+Features. Only result items with location information will appear in the FeatureCollection.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
 
 ```javascript
 const response = { ... };
 const featureCollection = suggestResponseToFeatureCollection(response)
+```
+
+## Amazon Location GeoRoutes Data Types to GeoJSON
+
+### calculateRoutesResponseToFeatureCollection
+
+This converts a CalculateRoutesResponse from the standalone Routes SDK to an array of GeoJSON FeatureCollections, one for each route in the
+response. Route responses contain multiple different types of geometry in the response, so the conversion is
+configurable to choose which features should be in the resulting GeoJSON. Each GeoJSON Feature contains properties
+from that portion of the response along with any child arrays/structures. It will not contain properties from any
+parent structures. So for example, with Route->Leg->TravelSteps, a converted Leg feature will contain properties for
+everything on Leg and everything in TravelSteps, but it won't contain any properties from Route.
+
+Each Feature contains a `FeatureType` property that can be used to distinguish between the types of features if
+multiple are requested during the conversion:
+
+- `Leg`: A travel leg of the route. (LineString)
+- `Span`: A span within a travel leg. (LineString)
+- `TravelStepGeometry`: A travel step line within a travel leg. (LineString)
+- `TravelStepStartPosition`: The start position of a travel step within a travel leg. (Point)
+- `Arrival`: The arrival position of a travel leg. (Point)
+- `Departure`: The departure position of a travel leg. (Point)
+
+Each FeatureCollection may contain a mixture of LineString and Point features, depending on the conversion options
+provided.
+
+Any feature that is missing its geometry in the response or has invalid geometry will throw an Error().
+
+The API optionally accepts the following conversion flags:
+
+- `flattenProperties`: flatten nested properties in the response (default: true)
+- `includeLegs`: include the Leg features (default: true)
+- `includeSpans`: include the Span features (default: false)
+- `includeTravelStepGeometry`: include the TravelStepGeometry features (default: false)
+- `includeTravelStepStartPositions`: include the TravelStepStartPosition features (default: false)
+- `includeLegArrivalDeparturePositions`: include the Arrival and Departure features (default: false)
+
+```javascript
+const response = { ... };
+const featureCollections = calculateRoutesResponseToFeatureCollections(response)
+```
+
+### calculateIsolinesResponseToFeatureCollection
+
+This converts a CalculateIsolineResponse from the standalone Routes SDK to a GeoJSON FeatureCollection which contains one Feature for each isoline
+in the response. Isolines can contain both polygons for isoline regions and lines for connectors between regions
+(such as ferry travel), so each Feature is a GeometryCollection that can contain a mix of Polygons and LineStrings.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
+
+Any feature that is missing its geometry in the response or has invalid geometry will throw an Error().
+
+```javascript
+const response = { ... };
+const featureCollection = calculateIsolinesResponseToFeatureCollection(response)
+```
+
+### optimizeWaypointsResponseToFeatureCollection
+
+This converts an OptimizeWaypointsResponse from the standalone Routes SDK to a GeoJSON FeatureCollection which contains one Feature for each
+waypoint in the response. The response can contain either impeding waypoints or optimized waypoints.
+The `flattenProperties` option will flatten the nested response data into a flat properties list.
+This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
+
+Each Feature contains a `FeatureType` property that can be used to distinguish between the types of features:
+
+- `ImpedingWaypoint`: A waypoint that impedes the optimization request.
+- `OptimizedWaypoint`: An optimized waypoint in a successful optimization request.
+
+```javascript
+const response = { ... };
+const featureCollection = optimizeWaypointsResponseToFeatureCollection(response)
+```
+
+### snapToRoadsResponseToFeatureCollection
+
+This converts a SnapToRoadsResponse from the standalone Routes SDK to a GeoJSON FeatureCollection. The FeatureCollection may optionally contain any
+combination of the snapped route geometry, the original trace points, the snapped trace points, and lines that
+connect the original trace points to their snapped trace points.
+
+Each Feature contains a `FeatureType` property that can be used to distinguish between the types of features if
+multiple are requested during the conversion:
+
+- `SnappedGeometry`: The snapped route geometry. (LineString)
+- `SnappedTracePointOriginalPosition`: The original submitted trace point. (Point)
+- `SnappedTracePointSnappedPosition`: The snapped trace point. (Point)
+- `OriginalToSnappedPositionLine`: A line from the original trace point to the corresponding snapped trace point. (LineString)
+
+The API optionally accepts the following conversion flags:
+
+- `flattenProperties`: flatten nested properties in the response (default: true)
+- `includeSnappedGeometry`: include the snapped route geometry features (default: true)
+- `includeSnappedTracePointOriginalPositions`: include the original trace point features (default: false)
+- `includeSnappedTracePointSnappedPositions`: include the snapped trace point features (default: false)
+- `includeOriginalToSnappedPositionLines`: include the trace point connector line features (default: false)
+
+```javascript
+const response = { ... };
+const featureCollection = snapToRoadsResponseToFeatureCollection(response)
 ```
 
 ## Error Handling
@@ -214,6 +331,8 @@ Examples:
 
 - A FeatureCollection containing a Feature of a non-polygon type when calling `featureCollectionToGeofence` will result in a set of geofence entries that do not contain that Feature.
 - An input to `devicePositionsToFeatureCollection` with an device position entry that does not contain the coordinates of the device will result in a FeatureCollection with that device position entry skipped.
+
+The GeoRoutes converters will additionally throw an Error() if the geometry in the passed-in response is invalid.
 
 # Getting Help
 

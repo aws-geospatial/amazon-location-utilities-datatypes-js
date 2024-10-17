@@ -62,7 +62,7 @@ describe("geocodeResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(geocodeResponseToFeatureCollection(input)).toEqual(output);
+    expect(geocodeResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert GeocodeResponse to a FeatureCollection with a multiple features when flattenProperties is false", () => {
@@ -147,7 +147,7 @@ describe("geocodeResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(geocodeResponseToFeatureCollection(input)).toEqual(output);
+    expect(geocodeResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert GeocodeResponse to a FeatureCollection with multiple features when flattenProperties is true", () => {
@@ -245,7 +245,9 @@ describe("getPlaceResponseToFeatureCollection", () => {
       Title: "title",
     };
 
-    expect(getPlaceResponseToFeatureCollection(input)).toMatchObject(emptyFeatureCollection());
+    expect(getPlaceResponseToFeatureCollection(input, { flattenProperties: false })).toMatchObject(
+      emptyFeatureCollection(),
+    );
   });
 
   it("should convert GetPlaceResponse to a FeatureCollection with a multiple features when flattenProperties is false", () => {
@@ -305,7 +307,7 @@ describe("getPlaceResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(getPlaceResponseToFeatureCollection(input)).toEqual(output);
+    expect(getPlaceResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert GetPlaceResponse to a FeatureCollection with multiple features when flattenProperties is true", () => {
@@ -408,7 +410,7 @@ describe("reverseGeocodeResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(reverseGeocodeResponseToFeatureCollection(input)).toEqual(output);
+    expect(reverseGeocodeResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert ReverseGeocodeResponse to a FeatureCollection with a multiple features when flattenProperties is false", () => {
@@ -480,7 +482,7 @@ describe("reverseGeocodeResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(reverseGeocodeResponseToFeatureCollection(input)).toEqual(output);
+    expect(reverseGeocodeResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert ReverseGeocodeResponse to a FeatureCollection with multiple features when flattenProperties is true", () => {
@@ -591,7 +593,7 @@ describe("searchNearbyResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(searchNearbyResponseToFeatureCollection(input)).toEqual(output);
+    expect(searchNearbyResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert SearchNearbyResponse to a FeatureCollection with a multiple features when flattenProperties is false", () => {
@@ -655,7 +657,7 @@ describe("searchNearbyResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(reverseGeocodeResponseToFeatureCollection(input)).toEqual(output);
+    expect(reverseGeocodeResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert SearchNearbyResponse to a FeatureCollection with multiple features when flattenProperties is true", () => {
@@ -760,7 +762,7 @@ describe("searchTextResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(searchTextResponseToFeatureCollection(input)).toEqual(output);
+    expect(searchTextResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert SearchTextResponse to a FeatureCollection with a multiple features when flattenProperties is false", () => {
@@ -828,7 +830,7 @@ describe("searchTextResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(searchTextResponseToFeatureCollection(input)).toEqual(output);
+    expect(searchTextResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert SearchTextResponse to a FeatureCollection with multiple features when flattenProperties is true", () => {
@@ -945,7 +947,7 @@ describe("suggestResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(suggestResponseToFeatureCollection(input)).toEqual(output);
+    expect(suggestResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert SuggestResponse to a FeatureCollection with a multiple features when flattenProperties is false", () => {
@@ -1012,7 +1014,7 @@ describe("suggestResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: 2,
+          id: 1,
           properties: {
             Title: "Place Result 2 - no place ID",
             SuggestResultItemType: "Place",
@@ -1028,7 +1030,7 @@ describe("suggestResponseToFeatureCollection", () => {
         },
       ],
     };
-    expect(suggestResponseToFeatureCollection(input)).toEqual(output);
+    expect(suggestResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(output);
   });
 
   it("should convert SuggestResponse to a FeatureCollection with multiple features when flattenProperties is true", () => {
@@ -1093,7 +1095,7 @@ describe("suggestResponseToFeatureCollection", () => {
         },
         {
           type: "Feature",
-          id: 2,
+          id: 1,
           properties: {
             Title: "Place Result 2 - no place ID",
             SuggestResultItemType: "Place",

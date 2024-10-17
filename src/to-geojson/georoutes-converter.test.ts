@@ -1,14 +1,24 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CalculateRoutesResponse } from "@aws-sdk/client-georoutes";
-import { calculateRoutesResponseToFeatureCollections } from "./georoutes-converter";
+import {
+  CalculateRoutesResponse,
+  CalculateIsolinesResponse,
+  OptimizeWaypointsResponse,
+  SnapToRoadsResponse,
+} from "@aws-sdk/client-georoutes";
+import {
+  calculateRoutesResponseToFeatureCollections,
+  calculateIsolinesResponseToFeatureCollection,
+  optimizeWaypointsResponseToFeatureCollection,
+  snapToRoadsResponseToFeatureCollection,
+} from "./georoutes-converter";
 import { FeatureCollection } from "geojson";
 import { emptyFeatureCollection } from "./utils";
 import { encodeFromLngLatArray } from "@aws-geospatial/polyline";
 
 describe("calculateRoutesResponseToFeatureCollections", () => {
-  it("should return empty FeatureCollection if Legs are missing geometry", () => {
+  it("should throw error if Legs are missing geometry", () => {
     const input: CalculateRoutesResponse = {
       LegGeometryFormat: "FlexiblePolyline",
       Notices: [],
@@ -35,7 +45,41 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
         },
       ],
     };
-    expect(calculateRoutesResponseToFeatureCollections(input)).toEqual([emptyFeatureCollection()]);
+    expect(() => {
+      calculateRoutesResponseToFeatureCollections(input, { flattenProperties: false });
+    }).toThrow(Error);
+  });
+
+  it("should throw error if Legs have invalid geometry", () => {
+    const input: CalculateRoutesResponse = {
+      LegGeometryFormat: "Simple",
+      Notices: [],
+      PricingBucket: "bucket",
+      Routes: [
+        {
+          MajorRoadLabels: [],
+          Legs: [
+            {
+              Geometry: { LineString: [[1.0, 2.0]] },
+              TravelMode: "Car",
+              Type: "Vehicle",
+            },
+            {
+              Geometry: { LineString: [[3.0, 4.0]] },
+              TravelMode: "Car",
+              Type: "Vehicle",
+            },
+          ],
+          Summary: {
+            Distance: 1,
+            Duration: 30,
+          },
+        },
+      ],
+    };
+    expect(() => {
+      calculateRoutesResponseToFeatureCollections(input, { flattenProperties: false });
+    }).toThrow(Error);
   });
 
   it("should return multiple FeatureCollections if multiple routes are present", () => {
@@ -182,7 +226,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
       },
     ];
 
-    expect(calculateRoutesResponseToFeatureCollections(input)).toEqual(expectedResult);
+    expect(calculateRoutesResponseToFeatureCollections(input, { flattenProperties: false })).toEqual(expectedResult);
   });
 
   it("should return nested properties if flattenProperties = false", () => {
@@ -265,7 +309,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
       },
     ];
 
-    expect(calculateRoutesResponseToFeatureCollections(input)).toEqual(expectedResult);
+    expect(calculateRoutesResponseToFeatureCollections(input, { flattenProperties: false })).toEqual(expectedResult);
   });
 
   it("should return flattened properties if flattenProperties = true", () => {
@@ -421,7 +465,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               ],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepGeometry",
               Duration: 1,
               Type: "Depart",
             },
@@ -447,8 +491,8 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeSpanLines: true,
-        includeTravelStepLines: true,
+        includeSpans: true,
+        includeTravelStepGeometry: true,
       }),
     ).toEqual(expectedResult);
   });
@@ -534,7 +578,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               ],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepGeometry",
               Duration: 1,
               Type: "Depart",
             },
@@ -560,8 +604,8 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeSpanLines: true,
-        includeTravelStepLines: true,
+        includeSpans: true,
+        includeTravelStepGeometry: true,
       }),
     ).toEqual(expectedResult);
   });
@@ -621,8 +665,8 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeSpanLines: true,
-        includeTravelStepLines: true,
+        includeSpans: true,
+        includeTravelStepGeometry: true,
       }),
     ).toEqual(expectedResult);
   });
@@ -795,16 +839,16 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeLegLines: true,
-        includeTravelStepLines: false,
-        includeSpanLines: false,
+        includeLegs: true,
+        includeTravelStepGeometry: false,
+        includeSpans: false,
         includeTravelStepStartPositions: false,
         includeLegArrivalDeparturePositions: false,
       }),
     ).toEqual(expectedResult);
   });
 
-  it("should return travel step lines if includeTravelStepLines = true", () => {
+  it("should return travel step lines if includeTravelStepGeometry = true", () => {
     const input: CalculateRoutesResponse = {
       LegGeometryFormat: "Simple",
       Notices: [],
@@ -867,7 +911,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               ],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepGeometry",
               Type: "Depart",
               Duration: 1,
             },
@@ -884,7 +928,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               ],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepGeometry",
               Type: "Continue",
               Duration: 1,
             },
@@ -896,16 +940,16 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeLegLines: false,
-        includeTravelStepLines: true,
-        includeSpanLines: false,
+        includeLegs: false,
+        includeTravelStepGeometry: true,
+        includeSpans: false,
         includeTravelStepStartPositions: false,
         includeLegArrivalDeparturePositions: false,
       }),
     ).toEqual(expectedResult);
   });
 
-  it("should return span lines if includeSpanLines = true", () => {
+  it("should return span lines if includeSpans = true", () => {
     const input: CalculateRoutesResponse = {
       LegGeometryFormat: "Simple",
       Notices: [],
@@ -993,9 +1037,9 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeLegLines: false,
-        includeTravelStepLines: false,
-        includeSpanLines: true,
+        includeLegs: false,
+        includeTravelStepGeometry: false,
+        includeSpans: true,
         includeTravelStepStartPositions: false,
         includeLegArrivalDeparturePositions: false,
       }),
@@ -1062,7 +1106,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               coordinates: [1, 2],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepStartPosition",
               Duration: 1,
               Type: "Depart",
             },
@@ -1075,7 +1119,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               coordinates: [3, 4],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepStartPosition",
               Duration: 1,
               Type: "Continue",
             },
@@ -1088,7 +1132,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               coordinates: [7, 8],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepStartPosition",
               Duration: 1,
               Type: "Arrive",
             },
@@ -1100,9 +1144,9 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeLegLines: false,
-        includeTravelStepLines: false,
-        includeSpanLines: false,
+        includeLegs: false,
+        includeTravelStepGeometry: false,
+        includeSpans: false,
         includeTravelStepStartPositions: true,
         includeLegArrivalDeparturePositions: false,
       }),
@@ -1190,9 +1234,9 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeLegLines: false,
-        includeTravelStepLines: false,
-        includeSpanLines: false,
+        includeLegs: false,
+        includeTravelStepGeometry: false,
+        includeSpans: false,
         includeTravelStepStartPositions: false,
         includeLegArrivalDeparturePositions: true,
       }),
@@ -1250,9 +1294,9 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeLegLines: false,
-        includeTravelStepLines: false,
-        includeSpanLines: false,
+        includeLegs: false,
+        includeTravelStepGeometry: false,
+        includeSpans: false,
         includeTravelStepStartPositions: false,
         includeLegArrivalDeparturePositions: false,
       }),
@@ -1297,6 +1341,16 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
                 TruckRoadTypes: [],
                 Zones: [],
               },
+            },
+            {
+              Geometry: {
+                LineString: [
+                  [9, 10],
+                  [11, 12],
+                ],
+              },
+              TravelMode: "Car",
+              Type: "Vehicle",
             },
           ],
           Summary: {
@@ -1377,7 +1431,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               ],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepGeometry",
               Type: "Depart",
               Duration: 1,
             },
@@ -1385,19 +1439,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
           {
             type: "Feature",
             id: 4,
-            geometry: {
-              type: "Point",
-              coordinates: [1, 2],
-            },
-            properties: {
-              FeatureType: "TravelStep",
-              Type: "Depart",
-              Duration: 1,
-            },
-          },
-          {
-            type: "Feature",
-            id: 5,
             geometry: {
               type: "LineString",
               coordinates: [
@@ -1407,8 +1448,21 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               ],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepGeometry",
               Type: "Continue",
+              Duration: 1,
+            },
+          },
+          {
+            type: "Feature",
+            id: 5,
+            geometry: {
+              type: "Point",
+              coordinates: [1, 2],
+            },
+            properties: {
+              FeatureType: "TravelStepStartPosition",
+              Type: "Depart",
               Duration: 1,
             },
           },
@@ -1420,7 +1474,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               coordinates: [3, 4],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepStartPosition",
               Duration: 1,
               Type: "Continue",
             },
@@ -1433,7 +1487,7 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               coordinates: [7, 8],
             },
             properties: {
-              FeatureType: "TravelStep",
+              FeatureType: "TravelStepStartPosition",
               Duration: 1,
               Type: "Arrive",
             },
@@ -1467,6 +1521,22 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               FeatureType: "Span",
             },
           },
+          {
+            type: "Feature",
+            id: 10,
+            geometry: {
+              type: "LineString",
+              coordinates: [
+                [9, 10],
+                [11, 12],
+              ],
+            },
+            properties: {
+              FeatureType: "Leg",
+              TravelMode: "Car",
+              Type: "Vehicle",
+            },
+          },
         ],
       },
     ];
@@ -1474,11 +1544,683 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
     expect(
       calculateRoutesResponseToFeatureCollections(input, {
         flattenProperties: true,
-        includeLegLines: true,
-        includeTravelStepLines: true,
-        includeSpanLines: true,
+        includeLegs: true,
+        includeTravelStepGeometry: true,
+        includeSpans: true,
         includeTravelStepStartPositions: true,
         includeLegArrivalDeparturePositions: true,
+      }),
+    ).toEqual(expectedResult);
+  });
+});
+
+describe("calculateIsolinesResponseToFeatureCollection", () => {
+  it("should throw error if Isolines are missing geometry", () => {
+    const input: CalculateIsolinesResponse = {
+      IsolineGeometryFormat: "FlexiblePolyline",
+      PricingBucket: "bucket",
+      Isolines: [
+        {
+          Connections: [],
+          Geometries: [{}],
+        },
+      ],
+    };
+    expect(() => {
+      calculateIsolinesResponseToFeatureCollection(input);
+    }).toThrow(Error);
+  });
+
+  it("should return nested properties if flattenProperties = false", () => {
+    const input: CalculateIsolinesResponse = {
+      IsolineGeometryFormat: "FlexiblePolyline",
+      PricingBucket: "bucket",
+      Isolines: [
+        {
+          Connections: [
+            {
+              FromPolygonIndex: 0,
+              Geometry: {
+                Polyline: encodeFromLngLatArray([
+                  [1, 2],
+                  [3, 4],
+                ]),
+              },
+              ToPolygonIndex: 1,
+            },
+          ],
+          Geometries: [
+            {
+              PolylinePolygon: [
+                encodeFromLngLatArray([
+                  [0, 0],
+                  [10, 0],
+                  [10, 10],
+                  [0, 10],
+                  [0, 0],
+                ]),
+              ],
+            },
+          ],
+          TimeThreshold: 1000,
+        },
+      ],
+    };
+
+    const expectedResult: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          id: 0,
+          geometry: {
+            type: "GeometryCollection",
+            geometries: [
+              {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [0, 0],
+                    [10, 0],
+                    [10, 10],
+                    [0, 10],
+                    [0, 0],
+                  ],
+                ],
+              },
+              {
+                type: "LineString",
+                coordinates: [
+                  [1, 2],
+                  [3, 4],
+                ],
+              },
+            ],
+          },
+          properties: {
+            TimeThreshold: 1000,
+          },
+        },
+      ],
+    };
+
+    expect(calculateIsolinesResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(expectedResult);
+  });
+
+  it("should return flattened properties if flattenProperties = true", () => {
+    const input: CalculateIsolinesResponse = {
+      IsolineGeometryFormat: "Simple",
+      PricingBucket: "bucket",
+      Isolines: [
+        {
+          Connections: [
+            {
+              FromPolygonIndex: 0,
+              Geometry: {
+                LineString: [
+                  [1, 2],
+                  [3, 4],
+                ],
+              },
+              ToPolygonIndex: 1,
+            },
+          ],
+          Geometries: [
+            {
+              Polygon: [
+                [
+                  [0, 0],
+                  [10, 0],
+                  [10, 10],
+                  [0, 10],
+                  [0, 0],
+                ],
+              ],
+            },
+          ],
+          TimeThreshold: 1000,
+        },
+      ],
+    };
+
+    const expectedResult: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          id: 0,
+          geometry: {
+            type: "GeometryCollection",
+            geometries: [
+              {
+                type: "Polygon",
+                coordinates: [
+                  [
+                    [0, 0],
+                    [10, 0],
+                    [10, 10],
+                    [0, 10],
+                    [0, 0],
+                  ],
+                ],
+              },
+              {
+                type: "LineString",
+                coordinates: [
+                  [1, 2],
+                  [3, 4],
+                ],
+              },
+            ],
+          },
+          properties: {
+            TimeThreshold: 1000,
+          },
+        },
+      ],
+    };
+
+    expect(calculateIsolinesResponseToFeatureCollection(input, { flattenProperties: true })).toEqual(expectedResult);
+  });
+});
+
+describe("optimizeWaypointsResponseToFeatureCollection", () => {
+  it("should return empty FeatureCollection if there are no waypoints", () => {
+    const input: OptimizeWaypointsResponse = {
+      Connections: [],
+      Distance: 1,
+      ImpedingWaypoints: [],
+      Duration: 10,
+      OptimizedWaypoints: [],
+      PricingBucket: "price",
+      TimeBreakdown: {
+        RestDuration: 1,
+        ServiceDuration: 2,
+        TravelDuration: 3,
+        WaitDuration: 4,
+      },
+    };
+    expect(optimizeWaypointsResponseToFeatureCollection(input)).toEqual(emptyFeatureCollection());
+  });
+
+  it("should return nested properties if flattenProperties = false", () => {
+    const input: OptimizeWaypointsResponse = {
+      Connections: [],
+      Distance: 1,
+      ImpedingWaypoints: [
+        {
+          FailedConstraints: [
+            {
+              Constraint: "AccessHours",
+              Reason: "Access hours constraint",
+            },
+          ],
+          Id: "Waypoint1",
+          Position: [1, 2],
+        },
+      ],
+      Duration: 10,
+      OptimizedWaypoints: [
+        {
+          ArrivalTime: "12:00",
+          DepartureTime: "11:00",
+          Id: "Waypoint0",
+          Position: [3, 4],
+        },
+      ],
+      PricingBucket: "price",
+      TimeBreakdown: {
+        RestDuration: 1,
+        ServiceDuration: 2,
+        TravelDuration: 3,
+        WaitDuration: 4,
+      },
+    };
+
+    const expectedResult: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          id: 0,
+          geometry: {
+            type: "Point",
+            coordinates: [1, 2],
+          },
+          properties: {
+            FeatureType: "ImpedingWaypoint",
+            FailedConstraints: [
+              {
+                Constraint: "AccessHours",
+                Reason: "Access hours constraint",
+              },
+            ],
+            Id: "Waypoint1",
+          },
+        },
+        {
+          type: "Feature",
+          id: 1,
+          geometry: {
+            type: "Point",
+            coordinates: [3, 4],
+          },
+          properties: {
+            FeatureType: "OptimizedWaypoint",
+            ArrivalTime: "12:00",
+            DepartureTime: "11:00",
+            Id: "Waypoint0",
+          },
+        },
+      ],
+    };
+
+    expect(optimizeWaypointsResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(expectedResult);
+  });
+
+  it("should return flattened properties if flattenProperties = true", () => {
+    const input: OptimizeWaypointsResponse = {
+      Connections: [],
+      Distance: 1,
+      ImpedingWaypoints: [
+        {
+          FailedConstraints: [
+            {
+              Constraint: "AccessHours",
+              Reason: "Access hours constraint",
+            },
+          ],
+          Id: "Waypoint1",
+          Position: [1, 2],
+        },
+      ],
+      Duration: 10,
+      OptimizedWaypoints: [
+        {
+          ArrivalTime: "12:00",
+          DepartureTime: "11:00",
+          Id: "Waypoint0",
+          Position: [3, 4],
+        },
+      ],
+      PricingBucket: "price",
+      TimeBreakdown: {
+        RestDuration: 1,
+        ServiceDuration: 2,
+        TravelDuration: 3,
+        WaitDuration: 4,
+      },
+    };
+
+    const expectedResult: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          id: 0,
+          geometry: {
+            type: "Point",
+            coordinates: [1, 2],
+          },
+          properties: {
+            FeatureType: "ImpedingWaypoint",
+            "FailedConstraints.0.Constraint": "AccessHours",
+            "FailedConstraints.0.Reason": "Access hours constraint",
+            Id: "Waypoint1",
+          },
+        },
+        {
+          type: "Feature",
+          id: 1,
+          geometry: {
+            type: "Point",
+            coordinates: [3, 4],
+          },
+          properties: {
+            FeatureType: "OptimizedWaypoint",
+            ArrivalTime: "12:00",
+            DepartureTime: "11:00",
+            Id: "Waypoint0",
+          },
+        },
+      ],
+    };
+
+    expect(optimizeWaypointsResponseToFeatureCollection(input, { flattenProperties: true })).toEqual(expectedResult);
+  });
+});
+
+describe("snapToRoadsResponseToFeatureCollection", () => {
+  it("should return empty FeatureCollection if nothing is requested", () => {
+    const input: SnapToRoadsResponse = {
+      Notices: [
+        {
+          Code: "TracePointsNotMatched",
+          Title: "Notice",
+          TracePointIndexes: [0, 1],
+        },
+      ],
+      PricingBucket: "price",
+      SnappedGeometry: {
+        LineString: [
+          [1, 2],
+          [3, 4],
+        ],
+      },
+      SnappedGeometryFormat: "Simple",
+      SnappedTracePoints: [
+        {
+          Confidence: 20,
+          OriginalPosition: [0.5, 1.5],
+          SnappedPosition: [1, 2],
+        },
+        {
+          Confidence: 80,
+          OriginalPosition: [3.1, 4.1],
+          SnappedPosition: [3, 4],
+        },
+      ],
+    };
+    expect(
+      snapToRoadsResponseToFeatureCollection(input, {
+        flattenProperties: false,
+        includeSnappedGeometry: false,
+        includeSnappedTracePointOriginalPositions: false,
+        includeSnappedTracePointSnappedPositions: false,
+        includeOriginalToSnappedPositionLines: false,
+      }),
+    ).toEqual(emptyFeatureCollection());
+  });
+
+  it("should return nested properties if flattenProperties = false", () => {
+    const input: SnapToRoadsResponse = {
+      Notices: [
+        {
+          Code: "TracePointsNotMatched",
+          Title: "Notice",
+          TracePointIndexes: [0, 1],
+        },
+      ],
+      PricingBucket: "price",
+      SnappedGeometry: {
+        LineString: [
+          [1, 2],
+          [3, 4],
+        ],
+      },
+      SnappedGeometryFormat: "Simple",
+      SnappedTracePoints: [
+        {
+          Confidence: 20,
+          OriginalPosition: [0.5, 1.5],
+          SnappedPosition: [1, 2],
+        },
+        {
+          Confidence: 80,
+          OriginalPosition: [3.1, 4.1],
+          SnappedPosition: [3, 4],
+        },
+      ],
+    };
+
+    const expectedResult: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          id: 0,
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [1, 2],
+              [3, 4],
+            ],
+          },
+          properties: {
+            FeatureType: "SnappedGeometry",
+            Notices: [
+              {
+                Code: "TracePointsNotMatched",
+                Title: "Notice",
+                TracePointIndexes: [0, 1],
+              },
+            ],
+            PricingBucket: "price",
+          },
+        },
+        {
+          type: "Feature",
+          id: 1,
+          geometry: {
+            type: "Point",
+            coordinates: [0.5, 1.5],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointOriginalPosition",
+            Confidence: 20,
+          },
+        },
+        {
+          type: "Feature",
+          id: 2,
+          geometry: {
+            type: "Point",
+            coordinates: [1, 2],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointSnappedPosition",
+            Confidence: 20,
+          },
+        },
+        {
+          type: "Feature",
+          id: 3,
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [0.5, 1.5],
+              [1, 2],
+            ],
+          },
+          properties: {
+            FeatureType: "OriginalToSnappedPositionLine",
+            Confidence: 20,
+          },
+        },
+        {
+          type: "Feature",
+          id: 4,
+          geometry: {
+            type: "Point",
+            coordinates: [3.1, 4.1],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointOriginalPosition",
+            Confidence: 80,
+          },
+        },
+        {
+          type: "Feature",
+          id: 5,
+          geometry: {
+            type: "Point",
+            coordinates: [3, 4],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointSnappedPosition",
+            Confidence: 80,
+          },
+        },
+        {
+          type: "Feature",
+          id: 6,
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [3.1, 4.1],
+              [3, 4],
+            ],
+          },
+          properties: {
+            FeatureType: "OriginalToSnappedPositionLine",
+            Confidence: 80,
+          },
+        },
+      ],
+    };
+
+    expect(
+      snapToRoadsResponseToFeatureCollection(input, {
+        flattenProperties: false,
+        includeSnappedGeometry: true,
+        includeSnappedTracePointOriginalPositions: true,
+        includeSnappedTracePointSnappedPositions: true,
+        includeOriginalToSnappedPositionLines: true,
+      }),
+    ).toEqual(expectedResult);
+  });
+
+  it("should return flattened properties if flattenProperties = true", () => {
+    const input: SnapToRoadsResponse = {
+      Notices: [
+        {
+          Code: "TracePointsNotMatched",
+          Title: "Notice",
+          TracePointIndexes: [0, 1],
+        },
+      ],
+      PricingBucket: "price",
+      SnappedGeometry: {
+        LineString: [
+          [1, 2],
+          [3, 4],
+        ],
+      },
+      SnappedGeometryFormat: "Simple",
+      SnappedTracePoints: [
+        {
+          Confidence: 20,
+          OriginalPosition: [0.5, 1.5],
+          SnappedPosition: [1, 2],
+        },
+        {
+          Confidence: 80,
+          OriginalPosition: [3.1, 4.1],
+          SnappedPosition: [3, 4],
+        },
+      ],
+    };
+
+    const expectedResult: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          id: 0,
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [1, 2],
+              [3, 4],
+            ],
+          },
+          properties: {
+            FeatureType: "SnappedGeometry",
+            "Notices.0.Code": "TracePointsNotMatched",
+            "Notices.0.Title": "Notice",
+            "Notices.0.TracePointIndexes.0": 0,
+            "Notices.0.TracePointIndexes.1": 1,
+            PricingBucket: "price",
+          },
+        },
+        {
+          type: "Feature",
+          id: 1,
+          geometry: {
+            type: "Point",
+            coordinates: [0.5, 1.5],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointOriginalPosition",
+            Confidence: 20,
+          },
+        },
+        {
+          type: "Feature",
+          id: 2,
+          geometry: {
+            type: "Point",
+            coordinates: [1, 2],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointSnappedPosition",
+            Confidence: 20,
+          },
+        },
+        {
+          type: "Feature",
+          id: 3,
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [0.5, 1.5],
+              [1, 2],
+            ],
+          },
+          properties: {
+            FeatureType: "OriginalToSnappedPositionLine",
+            Confidence: 20,
+          },
+        },
+        {
+          type: "Feature",
+          id: 4,
+          geometry: {
+            type: "Point",
+            coordinates: [3.1, 4.1],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointOriginalPosition",
+            Confidence: 80,
+          },
+        },
+        {
+          type: "Feature",
+          id: 5,
+          geometry: {
+            type: "Point",
+            coordinates: [3, 4],
+          },
+          properties: {
+            FeatureType: "SnappedTracePointSnappedPosition",
+            Confidence: 80,
+          },
+        },
+        {
+          type: "Feature",
+          id: 6,
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [3.1, 4.1],
+              [3, 4],
+            ],
+          },
+          properties: {
+            FeatureType: "OriginalToSnappedPositionLine",
+            Confidence: 80,
+          },
+        },
+      ],
+    };
+
+    expect(
+      snapToRoadsResponseToFeatureCollection(input, {
+        flattenProperties: true,
+        includeSnappedGeometry: true,
+        includeSnappedTracePointOriginalPositions: true,
+        includeSnappedTracePointSnappedPositions: true,
+        includeOriginalToSnappedPositionLines: true,
       }),
     ).toEqual(expectedResult);
   });

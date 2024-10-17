@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Feature, FeatureCollection, Point } from "geojson";
+import { FeatureCollection, Point } from "geojson";
 
 import {
   GeocodeResponse,
@@ -12,7 +12,38 @@ import {
   SuggestResponse,
 } from "@aws-sdk/client-geoplaces";
 
-import { toFeatureCollection, flattenProperties } from "./utils";
+import { flattenProperties, emptyFeatureCollection } from "./utils";
+
+/**
+ * Base options for converting a GeoPlaces response to a GeoJSON FeatureCollection.
+ *
+ * @group GeoPlaces
+ */
+export interface BaseGeoPlacesOptions {
+  /**
+   * Controls the flattening of nested properties.
+   *
+   * If true, nested properties within the properties field on each Feature will be flattened into a single flat list.
+   * This is required when using the properties in MapLibre expressions, as MapLibre doesn't support nested properties.
+   *
+   * @default true
+   */
+  flattenProperties?: boolean;
+}
+const defaultBaseGeoPlacesOptions = {
+  flattenProperties: true,
+};
+
+/**
+ * Options for converting a GetPlaceResponse to a GeoJSON FeatureCollection.
+ *
+ * @group GeoPlaces
+ */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetPlaceResponseOptions extends BaseGeoPlacesOptions {}
+const defaultGetPlaceResponseOptions = defaultBaseGeoPlacesOptions;
 
 /**
  * Convert GetPlaceResponse responses from our standalone Places SDK to a FeatureCollection with a Point Feature. Each
@@ -21,59 +52,14 @@ import { toFeatureCollection, flattenProperties } from "./utils";
  *
  * If the result doesn't contain location information, the output will be an empty FeatureCollection.
  *
- * @example Drawing the result of GetPlaceCommand with MapLibre could be simplified with this converter from the below
- * code:
+ * @example Drawing the result of GetPlaceCommand:
  *
  * ```js
  * // ...
- * const getPlaceCommand = new amazonLocationClient.GetPlaceCommand(params);
+ * const command = new amazonLocationClient.GetPlaceCommand(params);
  *
  * try {
- *   const response = await client.send(getPlaceCommand);
- *   if (response.error) {
- *     // error handling
- *   } else {
- *     const featureCollection = {
- *       type: "geojson",
- *       data: {
- *         type: "FeatureCollection",
- *         features: [
- *           type: "Feature",
- *           id: 0,
- *           properties: {}, // translate the properties here
- *           geometry: {
- *             type: "Point",
- *             coordinates: response?.Position,
- *           },
- *         ]
- *       },
- *     };
- *
- *     map.addSource("search-result", featureCollection);
- *     map.addLayer({
- *       id: "search-result-layer",
- *       type: "circle",
- *       source: "search-result",
- *       paint: {
- *         "circle-radius": 5,
- *         "circle-color": "#B42222",
- *       },
- *     });
- *   }
- * } catch (error) {
- *   // error handling
- * }
- * // ...
- * ```
- *
- * To:
- *
- * ```js
- * // ...
- * const getPlaceCommand = new amazonLocationClient.GetPlaceCommand(params);
- *
- * try {
- *   const response = await client.send(getPlaceCommand);
+ *   const response = await client.send(command);
  *   if (response.error) {
  *     // error handling
  *   } else {
@@ -93,617 +79,372 @@ import { toFeatureCollection, flattenProperties } from "./utils";
  * // ...
  * ```
  *
- * @example Converting a GetPlace result
- *
- * Result of GetPlace:
- *
- * ```json
- * {
- *   "AccessPoints": [
- *     {
- *       "Position": [-123.13303, 49.28992]
- *     }
- *   ],
- *   "Address": {
- *     "Label": "Whole Foods, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
- *     "Country": {
- *       "Code2": "CA",
- *       "Code3": "CAN",
- *       "Name": "Canada"
- *     },
- *     "Region": {
- *       "Code": "BC",
- *       "Name": "British Columbia"
- *     },
- *     "SubRegion": {
- *       "Name": "Metro Vancouver"
- *     },
- *     "Locality": "Vancouver",
- *     "District": "West End",
- *     "PostalCode": "V6G 1C8",
- *     "Street": "Robson St",
- *     "StreetComponents": [
- *       {
- *         "BaseName": "Robson",
- *         "Type": "St",
- *         "TypePlacement": "AfterBaseName",
- *         "TypeSeparator": " ",
- *         "Language": "en"
- *       }
- *     ],
- *     "AddressNumber": "1675"
- *   },
- *   "BusinessChains": [
- *     {
- *       "Name": "Whole Foods",
- *       "Id": "Whole_Foods"
- *     }
- *   ],
- *   "Categories": [
- *     {
- *       "Id": "grocery",
- *       "Name": "Grocery",
- *       "LocalizedName": "Grocery",
- *       "Primary": true
- *     }
- *   ],
- *   "Contacts": {
- *     "Phones": [
- *       {
- *         "Value": "+16046818568",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       },
- *       {
- *         "Value": "+16046875288"
- *       },
- *       {
- *         "Value": "+18449368255",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       }
- *     ],
- *     "Faxes": [
- *       {
- *         "Value": "+16046875063",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       }
- *     ],
- *     "Websites": [
- *       {
- *         "Value": "http://www.wholefoodsmarket.com",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       },
- *       {
- *         "Value": "http://www.wholefoodsmarket.com/stores/robson",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       },
- *       {
- *         "Value": "https://www.facebook.com/1888413144808506",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       },
- *       {
- *         "Value": "https://www.wholefoodsmarket.com/stores/Robson",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       },
- *       {
- *         "Value": "www.wholefoodsmarket.com",
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery"
- *           }
- *         ]
- *       }
- *     ]
- *   },
- *   "OpeningHours": [
- *     {
- *       "Display": ["Mon-Thu, Sat, Sun: 08:00 - 22:00"],
- *       "OpenNow": true,
- *       "Components": [
- *         {
- *           "OpenTime": "T080000",
- *           "OpenDuration": "PT14H00M",
- *           "Recurrence": "FREQ:DAILY;BYDAY:MO,TU,WE,TH,SA,SU"
- *         }
- *       ],
- *       "Categories": [
- *         {
- *           "Id": "grocery",
- *           "Name": "Grocery"
- *         }
- *       ]
- *     }
- *   ],
- *   "PlaceId": "AQAAAFUAyxxcYKqlUYVtNfwVOz7yjB3RKYwaVIUAaKwve4Rhlr3M_t8eFffC2AxhWxhoUrY8orFocbsqCkB3yU8l4-ExvIBR3Iyi6lGu4uO3dZEWTYBkioJU1PS9HJ7fDcB9Ch1VJJQxrliB_pmDYYDqll99U6nr63Bh",
- *   "PlaceType": "PointOfInterest",
- *   "Position": [-123.1328, 49.29008],
- *   "TimeZone": {
- *     "Name": "America/Vancouver",
- *     "Offset": "-07:00",
- *     "OffsetSeconds": -25200
- *   },
- *   "Title": "Whole Foods"
- * }
- * ```
- *
- * Output flattenProperties is false:
- *
- * ```json
- * {
- *   "type": "FeatureCollection",
- *   "features": [
- *     {
- *       "type": "Feature",
- *       "id": 0,
- *       "properties": {
- *         "AccessPoints": [
- *           {
- *             "Position": [-123.13303, 49.28992]
- *           }
- *         ],
- *         "Address": {
- *           "Label": "Whole Foods, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
- *           "Country": {
- *             "Code2": "CA",
- *             "Code3": "CAN",
- *             "Name": "Canada"
- *           },
- *           "Region": {
- *             "Code": "BC",
- *             "Name": "British Columbia"
- *           },
- *           "SubRegion": {
- *             "Name": "Metro Vancouver"
- *           },
- *           "Locality": "Vancouver",
- *           "District": "West End",
- *           "PostalCode": "V6G 1C8",
- *           "Street": "Robson St",
- *           "StreetComponents": [
- *             {
- *               "BaseName": "Robson",
- *               "Type": "St",
- *               "TypePlacement": "AfterBaseName",
- *               "TypeSeparator": " ",
- *               "Language": "en"
- *             }
- *           ],
- *           "AddressNumber": "1675"
- *         },
- *         "BusinessChains": [
- *           {
- *             "Name": "Whole Foods",
- *             "Id": "Whole_Foods"
- *           }
- *         ],
- *         "Categories": [
- *           {
- *             "Id": "grocery",
- *             "Name": "Grocery",
- *             "LocalizedName": "Grocery",
- *             "Primary": true
- *           }
- *         ],
- *         "Contacts": {
- *           "Phones": [
- *             {
- *               "Value": "+16046818568",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             },
- *             {
- *               "Value": "+16046875288"
- *             },
- *             {
- *               "Value": "+18449368255",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             }
- *           ],
- *           "Faxes": [
- *             {
- *               "Value": "+16046875063",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             }
- *           ],
- *           "Websites": [
- *             {
- *               "Value": "http://www.wholefoodsmarket.com",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             },
- *             {
- *               "Value": "http://www.wholefoodsmarket.com/stores/robson",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             },
- *             {
- *               "Value": "https://www.facebook.com/1888413144808506",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             },
- *             {
- *               "Value": "https://www.wholefoodsmarket.com/stores/Robson",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             },
- *             {
- *               "Value": "www.wholefoodsmarket.com",
- *               "Categories": [
- *                 {
- *                   "Id": "grocery",
- *                   "Name": "Grocery"
- *                 }
- *               ]
- *             }
- *           ]
- *         },
- *         "OpeningHours": [
- *           {
- *             "Display": ["Mon-Thu, Sat, Sun: 08:00 - 22:00"],
- *             "OpenNow": true,
- *             "Components": [
- *               {
- *                 "OpenTime": "T080000",
- *                 "OpenDuration": "PT14H00M",
- *                 "Recurrence": "FREQ:DAILY;BYDAY:MO,TU,WE,TH,SA,SU"
- *               }
- *             ],
- *             "Categories": [
- *               {
- *                 "Id": "grocery",
- *                 "Name": "Grocery"
- *               }
- *             ]
- *           }
- *         ],
- *         "PlaceId": "AQAAAFUAyxxcYKqlUYVtNfwVOz7yjB3RKYwaVIUAaKwve4Rhlr3M_t8eFffC2AxhWxhoUrY8orFocbsqCkB3yU8l4-ExvIBR3Iyi6lGu4uO3dZEWTYBkioJU1PS9HJ7fDcB9Ch1VJJQxrliB_pmDYYDqll99U6nr63Bh",
- *         "PlaceType": "PointOfInterest",
- *         "TimeZone": {
- *           "Name": "America/Vancouver",
- *           "Offset": "-07:00",
- *           "OffsetSeconds": -25200
- *         },
- *         "Title": "Whole Foods"
- *       },
- *       "geometry": {
- *         "type": "Point",
- *         "coordinates": [-123.1328, 49.29008]
- *       }
- *     }
- *   ]
- * }
- * ```
- *
- * - Output flattenProperties is true:
- *
- * ```json
- * {
- *   "type": "FeatureCollection",
- *   "features": [
- * {
- *     "type": "FeatureCollection",
- *     "features": [
- *         {
- *             "type": "Feature",
- *             "id": 0,
- *             "properties": {
- *                 "AccessPoints.0.Position": [
- *                     -123.13303,
- *                     49.28992
- *                 ],
- *                 "Address.Label": "Whole Foods, 1675 Robson St, Vancouver, BC V6G 1C8, Canada",
- *                 "Address.Country.Code2": "CA",
- *                 "Address.Country.Code3": "CAN",
- *                 "Address.Country.Name": "Canada",
- *                 "Address.Region.Code": "BC",
- *                 "Address.Region.Name": "British Columbia",
- *                 "Address.SubRegion.Name": "Metro Vancouver",
- *                 "Address.Locality": "Vancouver",
- *                 "Address.District": "West End",
- *                 "Address.PostalCode": "V6G 1C8",
- *                 "Address.Street": "Robson St",
- *                 "Address.StreetComponents.0.BaseName": "Robson",
- *                 "Address.StreetComponents.0.Type": "St",
- *                 "Address.StreetComponents.0.TypePlacement": "AfterBaseName",
- *                 "Address.StreetComponents.0.TypeSeparator": " ",
- *                 "Address.StreetComponents.0.Language": "en",
- *                 "Address.AddressNumber": "1675",
- *                 "BusinessChains.0.Name": "Whole Foods",
- *                 "BusinessChains.0.Id": "Whole_Foods",
- *                 "Categories.0.Id": "grocery",
- *                 "Categories.0.Name": "Grocery",
- *                 "Categories.0.LocalizedName": "Grocery",
- *                 "Categories.0.Primary": true,
- *                 "Contacts.Phones.0.Value": "+16046818568",
- *                 "Contacts.Phones.0.Categories.0.Id": "grocery",
- *                 "Contacts.Phones.0.Categories.0.Name": "Grocery",
- *                 "Contacts.Phones.1.Value": "+16046875288",
- *                 "Contacts.Phones.2.Value": "+18449368255",
- *                 "Contacts.Phones.2.Categories.0.Id": "grocery",
- *                 "Contacts.Phones.2.Categories.0.Name": "Grocery",
- *                 "Contacts.Faxes.0.Value": "+16046875063",
- *                 "Contacts.Faxes.0.Categories.0.Id": "grocery",
- *                 "Contacts.Faxes.0.Categories.0.Name": "Grocery",
- *                 "Contacts.Websites.0.Value": "http://www.wholefoodsmarket.com",
- *                 "Contacts.Websites.0.Categories.0.Id": "grocery",
- *                 "Contacts.Websites.0.Categories.0.Name": "Grocery",
- *                 "Contacts.Websites.1.Value": "http://www.wholefoodsmarket.com/stores/robson",
- *                 "Contacts.Websites.1.Categories.0.Id": "grocery",
- *                 "Contacts.Websites.1.Categories.0.Name": "Grocery",
- *                 "Contacts.Websites.2.Value": "https://www.facebook.com/1888413144808506",
- *                 "Contacts.Websites.2.Categories.0.Id": "grocery",
- *                 "Contacts.Websites.2.Categories.0.Name": "Grocery",
- *                 "Contacts.Websites.3.Value": "https://www.wholefoodsmarket.com/stores/Robson",
- *                 "Contacts.Websites.3.Categories.0.Id": "grocery",
- *                 "Contacts.Websites.3.Categories.0.Name": "Grocery",
- *                 "Contacts.Websites.4.Value": "www.wholefoodsmarket.com",
- *                 "Contacts.Websites.4.Categories.0.Id": "grocery",
- *                 "Contacts.Websites.4.Categories.0.Name": "Grocery",
- *                 "OpeningHours.0.Display.0": "Mon-Thu, Sat, Sun: 08:00 - 22:00",
- *                 "OpeningHours.0.OpenNow": true,
- *                 "OpeningHours.0.Components.0.OpenTime": "T080000",
- *                 "OpeningHours.0.Components.0.OpenDuration": "PT14H00M",
- *                 "OpeningHours.0.Components.0.Recurrence": "FREQ:DAILY;BYDAY:MO,TU,WE,TH,SA,SU",
- *                 "OpeningHours.0.Categories.0.Id": "grocery",
- *                 "OpeningHours.0.Categories.0.Name": "Grocery",
- *                 "PlaceId": "AQAAAFUAyxxcYKqlUYVtNfwVOz7yjB3RKYwaVIUAaKwve4Rhlr3M_t8eFffC2AxhWxhoUrY8orFocbsqCkB3yU8l4-ExvIBR3Iyi6lGu4uO3dZEWTYBkioJU1PS9HJ7fDcB9Ch1VJJQxrliB_pmDYYDqll99U6nr63Bh",
- *                 "PlaceType": "PointOfInterest",
- *                 "TimeZone.Name": "America/Vancouver",
- *                 "TimeZone.Offset": "-07:00",
- *                 "TimeZone.OffsetSeconds": -25200,
- *                 "Title": "Whole Foods"
- *             },
- *             "geometry": {
- *                 "type": "Point",
- *                 "coordinates": [
- *                     -123.1328,
- *                     49.29008
- *                 ]
- *             }
- *         }
- *     ]
- * }
- * ```
- *
  * @param response GetPlaceResponse from the GetPlace API.
  * @param options Options for flattening the properties.
  * @returns A GeoJSON FeatureCollection
+ * @group GeoPlaces
  */
 export function getPlaceResponseToFeatureCollection(
   response: GetPlaceResponse,
-  options?: { flattenProperties?: boolean },
+  options?: GetPlaceResponseOptions,
 ): FeatureCollection<Point> {
+  // Set any options that weren't passed in to the defaults.
+  options = { ...defaultGetPlaceResponseOptions, ...options };
+
+  const collection: FeatureCollection<Point> = emptyFeatureCollection();
+
   // Create a single feature in the feature collection with the entire response in the properties except
-  // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-  /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
+  // for Position, since that becomes the feature's geometry coordinates.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { Position, ...properties } = response;
-  return toFeatureCollection([createGeoJsonPointFeature(0, response.Position, properties, options)]);
+  addGeoJsonPointFeature(collection, response.Position, properties, options.flattenProperties);
+  return collection;
 }
+
+/** Options for converting a GeocodeResponse to a GeoJSON FeatureCollection. */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GeocodeResponseOptions extends BaseGeoPlacesOptions {}
+const defaultGeocodeResponseOptions = defaultBaseGeoPlacesOptions;
 
 /**
  * Convert GeocodeResponse responses from our standalone Places SDK to a FeatureCollection with a Point Features. Each
- * item in the `ResultItems` list is extracted as its own feature. `PlaceId` is extracted as the `id` of the output
- * Feature if `PlaceId` exists in the item. `Position` is extracted as the location for the Point Feature. All other
- * properties in the response are mapped into the Feature properties.
+ * item in the `ResultItems` list is extracted as its own feature. `Position` is extracted as the location for the Point
+ * Feature. All other properties in the response are mapped into the Feature properties.
  *
  * If a result item doesn't contain location information, it will not appear in the FeatureCollection.
+ *
+ * @example Drawing the result of GeocodeCommand:
+ *
+ * ```js
+ * // ...
+ * const command = new amazonLocationClient.GeocodeCommand(params);
+ *
+ * try {
+ *   const response = await client.send(command);
+ *   if (response.error) {
+ *     // error handling
+ *   } else {
+ *     const featureCollection = amazonLocationDataConverter.geocodeResponseToFeatureCollection(response);
+ *     map.addSource("search-result", { type: "geojson", data: featureCollection });
+ *     map.addLayer({
+ *       id: "search-result",
+ *       type: "circle",
+ *       source: "search-result",
+ *       paint: {
+ *         "circle-radius": 6,
+ *         "circle-color": "#B42222",
+ *       },
+ *     });
+ *   }
+ * } catch (error) {}
+ * // ...
+ * ```
  *
  * @param response GeocodeResponse from the Geocode API.
  * @param options Options for flattening the properties.
  * @returns A GeoJSON FeatureCollection
+ * @group GeoPlaces
  */
 export function geocodeResponseToFeatureCollection(
   response: GeocodeResponse,
-  options?: { flattenProperties?: boolean },
+  options?: GeocodeResponseOptions,
 ): FeatureCollection<Point> {
-  const features = response.ResultItems?.map(
+  // Set any options that weren't passed in to the defaults.
+  options = { ...defaultGeocodeResponseOptions, ...options };
+
+  const collection: FeatureCollection<Point> = emptyFeatureCollection();
+
+  for (const result of response.ResultItems ?? []) {
     // Create a single feature in the feature collection for each result with the entire result in the properties except
-    // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result, index) => {
-      /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { Position, ...properties } = result;
-      return createGeoJsonPointFeature(index, result.Position, properties, options);
-    },
-  );
-  return toFeatureCollection(features);
+    // for Position, since that becomes the feature's geometry coordinates.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { Position, ...properties } = result;
+    addGeoJsonPointFeature(collection, result.Position, properties, options.flattenProperties);
+  }
+  return collection;
 }
+
+/** Options for converting a ReverseGeocodeResponse to a GeoJSON FeatureCollection. */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ReverseGeocodeResponseOptions extends BaseGeoPlacesOptions {}
+const defaultReverseGeocodeResponseOptions = defaultBaseGeoPlacesOptions;
 
 /**
  * Convert ReverseGeocodeResponse responses from our standalone Places SDK to a FeatureCollection with a Point Features.
- * Each item in the `ResultItems` list is extracted as its own feature. `PlaceId` is extracted as the `id` of the output
- * Feature if `PlaceId` exists in the item. `Position` is extracted as the location for the Point Feature. All other
- * properties in the response are mapped into the Feature properties.
+ * Each item in the `ResultItems` list is extracted as its own feature. `Position` is extracted as the location for the
+ * Point Feature. All other properties in the response are mapped into the Feature properties.
  *
  * If a result item doesn't contain location information, it will not appear in the FeatureCollection.
+ *
+ * @example Drawing the result of ReverseGeocodeCommand:
+ *
+ * ```js
+ * // ...
+ * const command = new amazonLocationClient.ReverseGeocodeCommand(params);
+ *
+ * try {
+ *   const response = await client.send(command);
+ *   if (response.error) {
+ *     // error handling
+ *   } else {
+ *     const featureCollection = amazonLocationDataConverter.reverseGeocodeResponseToFeatureCollection(response);
+ *     map.addSource("search-result", { type: "geojson", data: featureCollection });
+ *     map.addLayer({
+ *       id: "search-result",
+ *       type: "circle",
+ *       source: "search-result",
+ *       paint: {
+ *         "circle-radius": 6,
+ *         "circle-color": "#B42222",
+ *       },
+ *     });
+ *   }
+ * } catch (error) {}
+ * // ...
+ * ```
  *
  * @param response ReverseGeocodeResponse from the ReverseGeocode API.
  * @param options Options for flattening the properties.
  * @returns A GeoJSON FeatureCollection
+ * @group GeoPlaces
  */
 export function reverseGeocodeResponseToFeatureCollection(
   response: ReverseGeocodeResponse,
-  options?: { flattenProperties?: boolean },
+  options?: ReverseGeocodeResponseOptions,
 ): FeatureCollection<Point> {
-  const features = response.ResultItems?.map(
+  // Set any options that weren't passed in to the defaults.
+  options = { ...defaultReverseGeocodeResponseOptions, ...options };
+
+  const collection: FeatureCollection<Point> = emptyFeatureCollection();
+
+  for (const result of response.ResultItems ?? []) {
     // Create a single feature in the feature collection for each result with the entire result in the properties except
-    // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result, index) => {
-      /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { Position, ...properties } = result;
-      return createGeoJsonPointFeature(index, result.Position, properties, options);
-    },
-  );
-  return toFeatureCollection(features);
+    // for Position, since that becomes the feature's geometry coordinates.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { Position, ...properties } = result;
+    addGeoJsonPointFeature(collection, result.Position, properties, options.flattenProperties);
+  }
+  return collection;
 }
+
+/** Options for converting a GetPlaceResponse to a GeoJSON FeatureCollection. */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface SearchNearbyResponseOptions extends BaseGeoPlacesOptions {}
+const defaultSearchNearbyResponseOptions = defaultBaseGeoPlacesOptions;
 
 /**
  * Convert SearchNearbyResponse responses from our standalone Places SDK to a FeatureCollection with a Point Features.
- * Each item in the `ResultItems` list is extracted as its own feature. `PlaceId` is extracted as the `id` of the output
- * Feature if `PlaceId` exists in the item. `Position` is extracted as the location for the Point Feature. All other
- * properties in the response are mapped into the Feature properties.
+ * Each item in the `ResultItems` list is extracted as its own feature. `Position` is extracted as the location for the
+ * Point Feature. All other properties in the response are mapped into the Feature properties.
  *
  * If a result item doesn't contain location information, it will not appear in the FeatureCollection.
+ *
+ * @example Drawing the result of SearchNearbyCommand:
+ *
+ * ```js
+ * // ...
+ * const command = new amazonLocationClient.SearchNearbyCommand(params);
+ *
+ * try {
+ *   const response = await client.send(command);
+ *   if (response.error) {
+ *     // error handling
+ *   } else {
+ *     const featureCollection = amazonLocationDataConverter.searchNearbyResponseToFeatureCollection(response);
+ *     map.addSource("search-result", { type: "geojson", data: featureCollection });
+ *     map.addLayer({
+ *       id: "search-result",
+ *       type: "circle",
+ *       source: "search-result",
+ *       paint: {
+ *         "circle-radius": 6,
+ *         "circle-color": "#B42222",
+ *       },
+ *     });
+ *   }
+ * } catch (error) {}
+ * // ...
+ * ```
  *
  * @param response SearchNearbyResponse from the SearchNearby API.
  * @param options Options for flattening the properties.
  * @returns A GeoJSON FeatureCollection
+ * @group GeoPlaces
  */
 export function searchNearbyResponseToFeatureCollection(
   response: SearchNearbyResponse,
-  options?: { flattenProperties?: boolean },
+  options?: SearchNearbyResponseOptions,
 ): FeatureCollection<Point> {
-  const features = response.ResultItems?.map(
+  // Set any options that weren't passed in to the defaults.
+  options = { ...defaultSearchNearbyResponseOptions, ...options };
+
+  const collection: FeatureCollection<Point> = emptyFeatureCollection();
+
+  for (const result of response.ResultItems ?? []) {
     // Create a single feature in the feature collection for each result with the entire result in the properties except
-    // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result, index) => {
-      /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { Position, ...properties } = result;
-      return createGeoJsonPointFeature(index, result.Position, properties, options);
-    },
-  );
-  return toFeatureCollection(features);
+    // for Position, since that becomes the feature's geometry coordinates.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { Position, ...properties } = result;
+    addGeoJsonPointFeature(collection, result.Position, properties, options.flattenProperties);
+  }
+  return collection;
 }
+
+/** Options for converting a GetPlaceResponse to a GeoJSON FeatureCollection. */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface SearchTextResponseOptions extends BaseGeoPlacesOptions {}
+const defaultSearchTextResponseOptions = defaultBaseGeoPlacesOptions;
 
 /**
  * Convert SearchTextResponse responses from our standalone Places SDK to a FeatureCollection with a Point Features.
- * Each item in the `ResultItems` list is extracted as its own feature. `PlaceId` is extracted as the `id` of the output
- * Feature if `PlaceId` exists in the item. `Position` is extracted as the location for the Point Feature. All other
- * properties in the response are mapped into the Feature properties.
+ * Each item in the `ResultItems` list is extracted as its own feature. `Position` is extracted as the location for the
+ * Point Feature. All other properties in the response are mapped into the Feature properties.
  *
  * If a result item doesn't contain location information, it will not appear in the FeatureCollection.
+ *
+ * @example Drawing the result of SearchTextCommand:
+ *
+ * ```js
+ * // ...
+ * const command = new amazonLocationClient.SearchTextCommand(params);
+ *
+ * try {
+ *   const response = await client.send(command);
+ *   if (response.error) {
+ *     // error handling
+ *   } else {
+ *     const featureCollection = amazonLocationDataConverter.searchTextResponseToFeatureCollection(response);
+ *     map.addSource("search-result", { type: "geojson", data: featureCollection });
+ *     map.addLayer({
+ *       id: "search-result",
+ *       type: "circle",
+ *       source: "search-result",
+ *       paint: {
+ *         "circle-radius": 6,
+ *         "circle-color": "#B42222",
+ *       },
+ *     });
+ *   }
+ * } catch (error) {}
+ * // ...
+ * ```
  *
  * @param response SearchTextResponse from the SearchText API.
  * @param options Options for flattening the properties.
  * @returns A GeoJSON FeatureCollection
+ * @group GeoPlaces
  */
 export function searchTextResponseToFeatureCollection(
   response: SearchTextResponse,
-  options?: { flattenProperties?: boolean },
+  options?: SearchTextResponseOptions,
 ): FeatureCollection<Point> {
-  const features = response.ResultItems?.map(
+  // Set any options that weren't passed in to the defaults.
+  options = { ...defaultSearchTextResponseOptions, ...options };
+
+  const collection: FeatureCollection<Point> = emptyFeatureCollection();
+
+  for (const result of response.ResultItems ?? []) {
     // Create a single feature in the feature collection for each result with the entire result in the properties except
-    // for PlaceId and Position, since these become the feature's id and geometry coordinates.
-    (result, index) => {
-      /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-      const { Position, ...properties } = result;
-      return createGeoJsonPointFeature(index, result.Position, properties, options);
-    },
-  );
-  return toFeatureCollection(features);
+    // for Position, since that becomes the feature's geometry coordinates.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { Position, ...properties } = result;
+    addGeoJsonPointFeature(collection, result.Position, properties, options.flattenProperties);
+  }
+  return collection;
 }
+
+/** Options for converting a GetPlaceResponse to a GeoJSON FeatureCollection. */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface SuggestResponseOptions extends BaseGeoPlacesOptions {}
+const defaultSuggestResponseOptions = defaultBaseGeoPlacesOptions;
 
 /**
  * Convert SuggestResponse responses from our standalone Places SDK to a FeatureCollection with a Point Features. Each
- * item in the `ResultItems` list is extracted as its own feature. `Place.PlaceId` is extracted as the `id` of the
- * output Feature if it exists in the item. `Place.Position` is extracted as the location for the Point Feature. All
- * other properties in the response are mapped into the Feature properties.
+ * item in the `ResultItems` list is extracted as its own feature. `Place.Position` is extracted as the location for the
+ * Point Feature. All other properties in the response are mapped into the Feature properties.
  *
  * If a result item doesn't contain location information, it will not appear in the FeatureCollection.
+ *
+ * @example Drawing the result of SuggestCommand:
+ *
+ * ```js
+ * // ...
+ * const command = new amazonLocationClient.SuggestCommand(params);
+ *
+ * try {
+ *   const response = await client.send(command);
+ *   if (response.error) {
+ *     // error handling
+ *   } else {
+ *     const featureCollection = amazonLocationDataConverter.suggestResponseToFeatureCollection(response);
+ *     map.addSource("search-result", { type: "geojson", data: featureCollection });
+ *     map.addLayer({
+ *       id: "search-result",
+ *       type: "circle",
+ *       source: "search-result",
+ *       paint: {
+ *         "circle-radius": 6,
+ *         "circle-color": "#B42222",
+ *       },
+ *     });
+ *   }
+ * } catch (error) {}
+ * // ...
+ * ```
  *
  * @param response SuggestResponse from the SearchText API.
  * @param options Options for flattening the properties.
  * @returns A GeoJSON FeatureCollection
+ * @group GeoPlaces
  */
 export function suggestResponseToFeatureCollection(
   response: SuggestResponse,
-  options?: { flattenProperties?: boolean },
+  options?: SuggestResponseOptions,
 ): FeatureCollection<Point> {
-  const features = response.ResultItems?.map(
+  // Set any options that weren't passed in to the defaults.
+  options = { ...defaultSuggestResponseOptions, ...options };
+
+  const collection: FeatureCollection<Point> = emptyFeatureCollection();
+
+  for (const result of response.ResultItems ?? []) {
     // Create a single feature in the feature collection for each result with the entire result in the properties except
-    // for Place.PlaceId and Place.Position, since these become the feature's id and geometry coordinates.
-    (result, index) => {
-      // We use structuredClone here to make a deep copy to ensure that deleting from the nested
-      // Place struct doesn't change the original value.
-      const properties = structuredClone(result);
-      delete properties.Place?.Position;
-      return createGeoJsonPointFeature(index, result.Place?.Position, properties, options);
-    },
-  );
-  return toFeatureCollection(features);
+    // for Place.Position, since that becomes the feature's geometry coordinates.
+    // We use structuredClone here to make a deep copy to ensure that deleting from the nested
+    // Place struct doesn't change the original value.
+    const properties = structuredClone(result);
+    delete properties.Place?.Position;
+    addGeoJsonPointFeature(collection, result.Place?.Position, properties, options.flattenProperties);
+  }
+  return collection;
 }
 
 /**
  * Creates a GeoJSON feature from a given id, coordinates, and Response structure.
  *
- * @param placeId A unique integer to identify this feature in the FeatureCollection.
+ * @param collection The FeatureCollection to add the feature to.
  * @param coordinates The coordinates to use for the Point, extracted from the Response structure.
  * @param properties The Response structure with the placeId and coordinates removed from it. The placeId and
  *   coordinates are expected to be removed because they would be redundant data since they already appear as the id and
  *   the geometry coordinates of the Point Feature.
- * @param options Options for flattening the properties.
+ * @param flatten Whether to flatten the properties or not. Defaults to true.
  * @returns A GeoJSON Point Feature of the Response object, or null if no coordinates were present.
  */
-function createGeoJsonPointFeature(
-  placeId: number,
+function addGeoJsonPointFeature(
+  collection: FeatureCollection,
   coordinates: number[],
   properties: object,
-  options?: { flattenProperties?: boolean },
-): Feature<Point> | null {
+  flatten: boolean,
+) {
   if (coordinates) {
     // Create a shallow copy of the passed-in properties and remove "$metadata", which can appear
     // in Response objects from the AWS SDK. Since $metadata is only metadata about the API call and
@@ -711,16 +452,14 @@ function createGeoJsonPointFeature(
     const propertiesClone = { ...properties };
     delete propertiesClone["$metadata"];
 
-    return {
+    collection.features.push({
       type: "Feature",
-      id: placeId,
-      properties: options?.flattenProperties ? flattenProperties(propertiesClone) : propertiesClone,
+      id: collection.features.length,
+      properties: flatten ? flattenProperties(propertiesClone) : propertiesClone,
       geometry: {
         type: "Point",
         coordinates: coordinates,
       },
-    };
+    });
   }
-
-  return null;
 }

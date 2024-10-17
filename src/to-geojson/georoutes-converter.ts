@@ -1,38 +1,80 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { FeatureCollection, LineString, Point } from "geojson";
-import { CalculateRoutesResponse, RouteLegGeometry } from "@aws-sdk/client-georoutes";
+import { FeatureCollection, Feature, GeometryCollection, LineString, Point, Polygon } from "geojson";
+import {
+  CalculateRoutesResponse,
+  CalculateIsolinesResponse,
+  RouteLegGeometry,
+  IsolineConnectionGeometry,
+  IsolineShapeGeometry,
+  OptimizeWaypointsResponse,
+  SnapToRoadsResponse,
+  RoadSnapSnappedGeometry,
+} from "@aws-sdk/client-georoutes";
 
 import { flattenProperties } from "./utils";
-import { decodeToLineString } from "@aws-geospatial/polyline";
+import { decodeToLineString, decodeToPolygon } from "@aws-geospatial/polyline";
 
 /**
- * Options for converting a CalculateRoutesResponse to a GeoJSON FeatureCollection.
+ * Base options for converting a GeoRoutes response to a GeoJSON FeatureCollection.
  *
- * @public - flattenProperties: Controls whether nested properties remain nested within the properties
- *   field on each Feature, or if they get flattened into a single flat list. Flattened properties are required when
- *   trying to use the properties in MapLibre expressions, as MapLibre doesn't support nested properties.
- * - includeLegLines: Creates a LineString Feature for each leg of the route.
- * - includeTravelStepLines: Creates a LineString Feature for each travel step in each leg of the route.
- * - includeSpanLines: Creates a LineString Feature for each span in each leg of the route.
- * - includeLegArrivalDeparturePositions: Creates Point Features for the arrival and departure positions of each leg of the route.
- * - includeTravelStepStartPositions: Creates a Point Feature for the start position of each travel step in the route.
+ * @group GeoRoutes
  */
-export interface CalculateRoutesResponseOptions {
+export interface BaseGeoRoutesOptions {
+  /**
+   * Controls the flattening of nested properties.
+   *
+   * If true, nested properties within the properties field on each Feature will be flattened into a single flat list.
+   * This is required when using the properties in MapLibre expressions, as MapLibre doesn't support nested properties.
+   *
+   * @default true
+   */
   flattenProperties?: boolean;
-  includeLegLines?: boolean;
-  includeTravelStepLines?: boolean;
-  includeSpanLines?: boolean;
+}
+const defaultBaseGeoRoutesOptions = {
+  flattenProperties: true,
+};
+
+/** Options for converting a CalculateRoutesResponse to a GeoJSON FeatureCollection. */
+export interface CalculateRoutesResponseOptions extends BaseGeoRoutesOptions {
+  /**
+   * Optionally creates a LineString Feature for each leg of the route.
+   *
+   * @default true
+   */
+  includeLegs?: boolean;
+  /**
+   * Optionally creates a LineString Feature for each travel step in each leg of the route.
+   *
+   * @default false
+   */
+  includeTravelStepGeometry?: boolean;
+  /**
+   * Optionally creates a LineString Feature for each span in each leg of the route.
+   *
+   * @default false
+   */
+  includeSpans?: boolean;
+  /**
+   * Optionally creates Point Features for the arrival and departure positions of each leg of the route.
+   *
+   * @default false
+   */
   includeLegArrivalDeparturePositions?: boolean;
+  /**
+   * Optionally creates a Point Feature for the start position of each travel step in each leg of the route.
+   *
+   * @default false
+   */
   includeTravelStepStartPositions?: boolean;
 }
 
 const defaultCalculateRoutesResponseOptions = {
-  flattenProperties: false,
-  includeLegLines: true,
-  includeTravelStepLines: false,
-  includeSpanLines: false,
+  ...defaultBaseGeoRoutesOptions,
+  includeLegs: true,
+  includeTravelStepGeometry: false,
+  includeSpans: false,
   includeLegArrivalDeparturePositions: false,
   includeTravelStepStartPositions: false,
 };
@@ -46,423 +88,122 @@ const defaultCalculateRoutesResponseOptions = {
  * everything on Leg and everything in TravelSteps, but it won't contain any properties from Route.
  *
  * Each Feature contains a `FeatureType` property that can be used to distinguish between the types of features if
- * multiple are requested during the conversion.
+ * multiple are requested during the conversion:
+ *
+ * - `Leg`: A travel leg of the route. (LineString)
+ * - `Span`: A span within a travel leg. (LineString)
+ * - `TravelStepGeometry`: A travel step line within a travel leg. (LineString)
+ * - `TravelStepStartPosition`: The start position of a travel step within a travel leg. (Point)
+ * - `Arrival`: The arrival position of a travel leg. (Point)
+ * - `Departure`: The departure position of a travel leg. (Point)
  *
  * Each FeatureCollection may contain a mixture of LineString and Point features, depending on the conversion options
  * provided.
  *
- * Any feature that is missing its geometry in the response will be skipped in the conversion.
+ * Any feature that is missing its geometry in the response or has invalid geometry will throw an Error.
  *
- * @example Converting a CalculateRoutesResponse with 1 route and 1 leg, with all the feature types converted and
- * flattenProperties set to true.
+ * @example Drawing a route with travel step dots and hover-over popups at each travel step.
  *
- * Value of CalculateRoutesResponse:
+ * ```js
+ *         const popup = new maplibregl.Popup({
+ *             closeButton: false,
+ *             closeOnClick: false
+ *         });
  *
- * ```json
- * {
- *   "LegGeometryFormat": "FlexiblePolyline",
- *   "Notices": [],
- *   "Routes": [
- *     {
- *       "Legs": [
- *         {
- *           "Geometry": {
- *             "Polyline": "BG6ogqvC1975lFyhBVsnBnB8fTw5BnBsOTslCnB84BnBsiB7BgFA8aA4pC7BwMAs7BnBkhB7B8iCT8pB7Bk6B7Bk_B7B8-D3DokBT89B7BvCovDzFomF_E0zDnB4cnBsiB7B8zB_E0ezFgU3Ige_EgjBjDopBjDkrBvC4coBsTgF4SoG8VkIofsEkXsEofkD4csEopB8Bsd8B8VUgZwH8vDkIwwDoBofgFgrC0FkzCkDkwBoBgtBwCkhBgFs2B0Fo7CwC8kBwCopBgFosC4I4qE4Do4BwCsnBoBwb8BwM8BgKgFgK0F8GkIwHoL4IkIsE8GkDoG0F4DgF3STvlBArJA_JAv0BT72CnBz_C_EnVnBr7BjD_JrEzF3D7G_ErEnG3D_JjDvMUzKU7LAvHAnGT7GnB_E7BrE7B3DvC3DjD3D3D3DrE3D3DjDzFrEnQvM7QjN7QzP7VrT_JrJ7L_J3rBriB7L7GrJ_EnGAnGAvMkD7GwCnQ0FjN4D_E8BjI8BjS0FrJoB7GoBnGnBvHnBzFrEzFrErEvHrEvHvC3InBrJArJ8B_JkD3IgFjIgFnG8GrE8GvC8GnB8GoB8GwC8GsE0FoGsEwHkDsJsEoVoGwgBU4D0F4S8G8VsE8asE4c4SksD0FkhB4I0yB4I8zBsTgzD8LonCsdktFghCwjMsnB8sH8GsnBokBg3GkNgmC0Pk_BwMgtBwMwlB8GoQoLkc8V8zB4NgeoQsdgZssBkc4rBgU4c0jB0tB0Z4coLwMkwB0tB0oBgoBof4cqLoK"
- *           },
- *           "Language": "en-us",
- *           "TravelMode": "Car",
- *           "Type": "Vehicle",
- *           "VehicleLegDetails": {
- *             "AfterTravelSteps": [],
- *             "Arrival": {
- *               "Place": {
- *                 "ChargingStation": false,
- *                 "OriginalPosition": [-86.8590917, 41.5981923],
- *                 "Position": [-86.8639365, 41.6006313]
- *               }
- *             },
- *             "Departure": {
- *               "Place": {
- *                 "ChargingStation": false,
- *                 "OriginalPosition": [-86.9331426, 41.582714],
- *                 "Position": [-86.9314193, 41.5827334]
- *               }
- *             },
- *             "Incidents": [],
- *             "Notices": [],
- *             "PassThroughWaypoints": [],
- *             "Spans": [
- *               {
- *                 "GeometryOffset": 0
- *               },
- *               {
- *                 "GeometryOffset": 81,
- *                 "TollSystems": [0]
- *               }
- *             ],
- *             "Summary": {
- *               "Overview": {
- *                 "BestCaseDuration": 515,
- *                 "Distance": 9946,
- *                 "Duration": 515
- *               },
- *               "TravelOnly": {
- *                 "BestCaseDuration": 515,
- *                 "Duration": 515
- *               }
- *             },
- *             "TollSystems": [
- *               {
- *                 "Name": "INDIANA TOLL ROAD"
- *               }
- *             ],
- *             "Tolls": [],
- *             "TravelSteps": [
- *               {
- *                 "Distance": 1784,
- *                 "Duration": 91,
- *                 "ExitNumber": [],
- *                 "GeometryOffset": 0,
- *                 "Type": "Depart"
- *               },
- *               {
- *                 "Distance": 3006,
- *                 "Duration": 191,
- *                 "ExitNumber": [],
- *                 "GeometryOffset": 21,
- *                 "TurnStepDetails": {
- *                   "Intersection": [],
- *                   "SteeringDirection": "Right",
- *                   "TurnIntensity": "Typical"
- *                 },
- *                 "Type": "Turn"
- *               },
- *               {
- *                 "Distance": 696,
- *                 "Duration": 27,
- *                 "ExitNumber": [],
- *                 "GeometryOffset": 72,
- *                 "TurnStepDetails": {
- *                   "Intersection": [],
- *                   "SteeringDirection": "Right",
- *                   "TurnIntensity": "Sharp"
- *                 },
- *                 "Type": "Turn"
- *               },
- *               {
- *                 "Distance": 4460,
- *                 "Duration": 206,
- *                 "ExitNumber": [],
- *                 "GeometryOffset": 81,
- *                 "RampStepDetails": {
- *                   "Intersection": [],
- *                   "SteeringDirection": "Right"
- *                 },
- *                 "Type": "Ramp"
- *               },
- *               {
- *                 "Distance": 0,
- *                 "Duration": 0,
- *                 "ExitNumber": [],
- *                 "GeometryOffset": 180,
- *                 "Type": "Arrive"
- *               }
- *             ],
- *             "TruckRoadTypes": [],
- *             "Zones": []
- *           }
- *         }
- *       ],
- *       "MajorRoadLabels": [
- *         {
- *           "RouteNumber": {
- *             "Language": "en",
- *             "Value": "I-80"
- *           }
- *         },
- *         {
- *           "RoadName": {
- *             "Language": "en",
- *             "Value": "W Snyder Rd"
- *           }
- *         }
- *       ],
- *       "Summary": {
- *         "Distance": 9946,
- *         "Duration": 515
- *       }
- *     }
- *   ]
- * }
- * ```
+ *         // Set up command to calculate route between 2 points
+ *         const calculateRouteCommand =
+ *             new amazonLocationClient.routes.CalculateRoutesCommand(params);
  *
- * Output from calculateRoutesResponseToFeatureCollection:
+ *         try {
+ *             const response = await client.send(calculateRouteCommand);
  *
- * ```json
- * [
- *     {
- *         "type": "FeatureCollection",
- *         "features": [
- *             {
- *                 "type": "Feature",
- *                 "id": 0,
- *                 "properties": {
- *                     "Language": "en-us",
- *                     "TravelMode": "Car",
- *                     "Type": "Vehicle",
- *                     "VehicleLegDetails.Arrival.Place.ChargingStation": false,
- *                     "VehicleLegDetails.Arrival.Place.OriginalPosition": [
- *                         -86.8590917,
- *                         41.5981923
+ *             const collections = amazonLocationDataConverter.calculateRoutesResponseToFeatureCollections(response, {
+ *                 flattenProperties: true,
+ *                 includeTravelStepGeometry: true,
+ *                 includeLegs: true,
+ *                 includeSpans: true,
+ *                 includeLegArrivalDeparturePositions: true,
+ *                 includeTravelStepStartPositions: true,
+ *                 });
+ *
+ *             if (response.Routes.length > 0) {
+ *                 // This is only adding a source for the first route in the returned collection.
+ *                 // If all the routes are desired, add sources for each entry in collections[].
+ *                 map.addSource("route-0", { type: "geojson", data: collections[0]});
+ *
+ *                 // This layer filters the GeoJSON to only draw lines of type TravelStepGeometry.
+ *                 map.addLayer({
+ *                     id: `route-0`,
+ *                     type: 'line',
+ *                     source: "route-0",
+ *                     filter: ['all',
+ *                         ['==', ['get', 'FeatureType'], 'TravelStepGeometry'],
  *                     ],
- *                     "VehicleLegDetails.Arrival.Place.Position": [
- *                         -86.8639365,
- *                         41.6006313
+ *                     layout: {
+ *                         'line-join': 'round',
+ *                         'line-cap': 'round'
+ *                     },
+ *                     paint: {
+ *                         'line-color': '#3887be',
+ *                         'line-width': 5,
+ *                         'line-opacity': 0.75
+ *                     }
+ *                 });
+ *
+ *                 // This layer filters the GeoJSON to only draw points of type TravelStepStartPosition.
+ *                 map.addLayer({
+ *                     id: "route-0-travelsteps",
+ *                     type: "circle",
+ *                     source: "route-0",
+ *                     filter: ['all',
+ *                         ['==', ['get', 'FeatureType'], 'TravelStepStartPosition'],
  *                     ],
- *                     "VehicleLegDetails.Departure.Place.ChargingStation": false,
- *                     "VehicleLegDetails.Departure.Place.OriginalPosition": [
- *                         -86.9331426,
- *                         41.582714
- *                     ],
- *                     "VehicleLegDetails.Departure.Place.Position": [
- *                         -86.9314193,
- *                         41.5827334
- *                     ],
- *                     "VehicleLegDetails.Spans.0.GeometryOffset": 0,
- *                     "VehicleLegDetails.Spans.1.GeometryOffset": 81,
- *                     "VehicleLegDetails.Spans.1.TollSystems.0": 0,
- *                     "VehicleLegDetails.Summary.Overview.BestCaseDuration": 515,
- *                     "VehicleLegDetails.Summary.Overview.Distance": 9946,
- *                     "VehicleLegDetails.Summary.Overview.Duration": 515,
- *                     "VehicleLegDetails.Summary.TravelOnly.BestCaseDuration": 515,
- *                     "VehicleLegDetails.Summary.TravelOnly.Duration": 515,
- *                     "VehicleLegDetails.TollSystems.0.Name": "INDIANA TOLL ROAD",
- *                     "VehicleLegDetails.TravelSteps.0.Distance": 1784,
- *                     "VehicleLegDetails.TravelSteps.0.Duration": 91,
- *                     "VehicleLegDetails.TravelSteps.0.GeometryOffset": 0,
- *                     "VehicleLegDetails.TravelSteps.0.Type": "Depart",
- *                     "VehicleLegDetails.TravelSteps.1.Distance": 3006,
- *                     "VehicleLegDetails.TravelSteps.1.Duration": 191,
- *                     "VehicleLegDetails.TravelSteps.1.GeometryOffset": 21,
- *                     "VehicleLegDetails.TravelSteps.1.TurnStepDetails.SteeringDirection": "Right",
- *                     "VehicleLegDetails.TravelSteps.1.TurnStepDetails.TurnIntensity": "Typical",
- *                     "VehicleLegDetails.TravelSteps.1.Type": "Turn",
- *                     "VehicleLegDetails.TravelSteps.2.Distance": 696,
- *                     "VehicleLegDetails.TravelSteps.2.Duration": 27,
- *                     "VehicleLegDetails.TravelSteps.2.GeometryOffset": 72,
- *                     "VehicleLegDetails.TravelSteps.2.TurnStepDetails.SteeringDirection": "Right",
- *                     "VehicleLegDetails.TravelSteps.2.TurnStepDetails.TurnIntensity": "Sharp",
- *                     "VehicleLegDetails.TravelSteps.2.Type": "Turn",
- *                     "VehicleLegDetails.TravelSteps.3.Distance": 4460,
- *                     "VehicleLegDetails.TravelSteps.3.Duration": 206,
- *                     "VehicleLegDetails.TravelSteps.3.GeometryOffset": 81,
- *                     "VehicleLegDetails.TravelSteps.3.RampStepDetails.SteeringDirection": "Right",
- *                     "VehicleLegDetails.TravelSteps.3.Type": "Ramp",
- *                     "VehicleLegDetails.TravelSteps.4.Distance": 0,
- *                     "VehicleLegDetails.TravelSteps.4.Duration": 0,
- *                     "VehicleLegDetails.TravelSteps.4.GeometryOffset": 180,
- *                     "VehicleLegDetails.TravelSteps.4.Type": "Arrive",
- *                     "FeatureType": "Leg"
- *                 },
- *                 "geometry": {
- *                     "type": "LineString",
- *                     "coordinates": [ ... ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 1,
- *                 "properties": {
- *                     "Distance": 1784,
- *                     "Duration": 91,
- *                     "Type": "Depart",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "LineString",
- *                     "coordinates": [ ... ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 2,
- *                 "properties": {
- *                     "Distance": 1784,
- *                     "Duration": 91,
- *                     "Type": "Depart",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "Point",
- *                     "coordinates": [ -86.931419, 41.582733 ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 3,
- *                 "properties": {
- *                     "Distance": 3006,
- *                     "Duration": 191,
- *                     "TurnStepDetails.SteeringDirection": "Right",
- *                     "TurnStepDetails.TurnIntensity": "Typical",
- *                     "Type": "Turn",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "LineString",
- *                     "coordinates": [ ... ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 4,
- *                 "properties": {
- *                     "Distance": 3006,
- *                     "Duration": 191,
- *                     "TurnStepDetails.SteeringDirection": "Right",
- *                     "TurnStepDetails.TurnIntensity": "Typical",
- *                     "Type": "Turn",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "Point",
- *                     "coordinates": [ -86.93184, 41.59878 ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 5,
- *                 "properties": {
- *                     "Distance": 696,
- *                     "Duration": 27,
- *                     "TurnStepDetails.SteeringDirection": "Right",
- *                     "TurnStepDetails.TurnIntensity": "Sharp",
- *                     "Type": "Turn",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "LineString",
- *                     "coordinates": [ ... ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 6,
- *                 "properties": {
- *                     "Distance": 696,
- *                     "Duration": 27,
- *                     "TurnStepDetails.SteeringDirection": "Right",
- *                     "TurnStepDetails.TurnIntensity": "Sharp",
- *                     "Type": "Turn",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "Point",
- *                     "coordinates": [ -86.89657, 41.60071 ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 7,
- *                 "properties": {
- *                     "Distance": 4460,
- *                     "Duration": 206,
- *                     "RampStepDetails.SteeringDirection": "Right",
- *                     "Type": "Ramp",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "LineString",
- *                     "coordinates": [ ... ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 8,
- *                 "properties": {
- *                     "Distance": 4460,
- *                     "Duration": 206,
- *                     "RampStepDetails.SteeringDirection": "Right",
- *                     "Type": "Ramp",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "Point",
- *                     "coordinates": [ -86.89676, 41.59445 ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 9,
- *                 "properties": {
- *                     "Distance": 0,
- *                     "Duration": 0,
- *                     "Type": "Arrive",
- *                     "FeatureType": "TravelStep"
- *                 },
- *                 "geometry": {
- *                     "type": "Point",
- *                     "coordinates": [ -86.863936, 41.600631 ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 10,
- *                 "properties": {
- *                     "FeatureType": "Span"
- *                 },
- *                 "geometry": {
- *                     "type": "LineString",
- *                     "coordinates": [ ... ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 11,
- *                 "properties": {
- *                     "TollSystems.0": 0,
- *                     "FeatureType": "Span"
- *                 },
- *                 "geometry": {
- *                     "type": "LineString",
- *                     "coordinates": [ ... ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 12,
- *                 "properties": {
- *                     "Place.ChargingStation": false,
- *                     "Place.OriginalPosition": [
- *                         -86.9331426,
- *                         41.582714
- *                     ],
- *                     "FeatureType": "Departure"
- *                 },
- *                 "geometry": {
- *                     "type": "Point",
- *                     "coordinates": [ -86.9314193, 41.5827334 ]
- *                 }
- *             },
- *             {
- *                 "type": "Feature",
- *                 "id": 13,
- *                 "properties": {
- *                     "Place.ChargingStation": false,
- *                     "Place.OriginalPosition": [
- *                         -86.8590917,
- *                         41.5981923
- *                     ],
- *                     "FeatureType": "Arrival"
- *                 },
- *                 "geometry": {
- *                     "type": "Point",
- *                     "coordinates": [ -86.8639365, 41.6006313 ]
- *                 }
- *             }
- *         ]
- *     }
- * ]
+ *                     paint: {
+ *                         "circle-radius": 6,
+ *                         "circle-color": "#B42222",
+ *                     },
+ *                 });
+ *
+ *                 // Show a popup on mouseenter with the directions, distance, and duration.
+ *                 map.on('mouseenter', 'route-0-travelsteps', (e) => {
+ *                     map.getCanvas().style.cursor = 'pointer';
+ *
+ *                     if (e.features.length > 0) {
+ *                         const feature = e.features[0];
+ *                         const coordinates = feature.geometry.coordinates.slice();
+ *                         let title = e.features[0].properties['Type'] || '';
+ *                         if (e.features[0].properties['TurnStepDetails.SteeringDirection']) {
+ *                             title = title + ' ' + e.features[0].properties['TurnStepDetails.SteeringDirection'];
+ *                         }
+ *                         if (e.features[0].properties['RampStepDetails.SteeringDirection']) {
+ *                             title = title + ' ' + e.features[0].properties['RampStepDetails.SteeringDirection'];
+ *                         }
+ *                         if (e.features[0].properties['KeepStepDetails.SteeringDirection']) {
+ *                             title = title + ' ' + e.features[0].properties['KeepStepDetails.SteeringDirection'];
+ *                         }
+ *                         const distance = e.features[0].properties['Distance'] || '';
+ *                         const duration = e.features[0].properties['Duration'] || '';
+ *
+ *                         // Create popup content
+ *                         const popupContent = `
+ *         <h3>${title}</h3>
+ *         <p><strong>Distance:</strong> ${distance}</p>
+ *         <p><strong>Duration:</strong> ${duration}</p>
+ *       `;
+ *
+ *                         // Set popup coordinates and content
+ *                         popup
+ *                           .setLngLat(e.lngLat)
+ *                           .setHTML(popupContent)
+ *                           .addTo(map);
+ *                     }
+ *                 });
+ *
+ *                 // Remove popup on mouseleave
+ *                 map.on('mouseleave', 'route-0-travelsteps', () => {
+ *                     map.getCanvas().style.cursor = '';
+ *                     popup.remove();
+ *                 });
  * ```
  */
 export function calculateRoutesResponseToFeatureCollections(
@@ -501,7 +242,7 @@ export function calculateRoutesResponseToFeatureCollections(
         // If we don't have a valid leg LineString, we can't convert anything from this leg into GeoJSON.
         // Skip it and move on to the next leg.
         if (legLineString.coordinates.length < 2) {
-          continue;
+          throw Error("Route leg has invalid geometry.");
         }
 
         // Generically reference the appropriate LegDetails structure for this leg.
@@ -513,12 +254,12 @@ export function calculateRoutesResponseToFeatureCollections(
           ? leg.FerryLegDetails
           : null;
 
-        // If includeLegLines is requested, we'll include a LineString feature for each Leg in the Route,
+        // If includeLegs is requested, we'll include a LineString feature for each Leg in the Route,
         // with all the Leg properties except for the Geometry property, since that would be
         // redundant with the Feature geometry.
         // These features have FeatureType = "Leg".
-        if (options.includeLegLines) {
-          /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
+        if (options.includeLegs) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { Geometry, ...legProperties } = leg;
           legProperties["FeatureType"] = "Leg";
           addFeatureToCollection(routeCollection, options.flattenProperties, legProperties, legLineString);
@@ -541,32 +282,47 @@ export function calculateRoutesResponseToFeatureCollections(
           }
         }
 
-        // If includeTravelStepLines is requested, we'll include a LineString feature for each TravelStep
+        // If includeTravelStepGeometry is requested, we'll include a LineString feature for each TravelStep
         // in each Leg in the Route, with all the TravelStep properties except for the GeometryOffset property.
         // GeometryOffset is only needed for calculating the LineString belonging to the TravelStep, so there's
         // no reason to leave it in the results. TravelStep lines are useful for associating with information about
         // the route between each travel step, such as distance and time.
+        // These features have FeatureType = "TravelStepGeometry".
+        if (options.includeTravelStepGeometry) {
+          extractNestedLinesIntoCollection(
+            routeCollection,
+            "TravelStepGeometry",
+            legLineString,
+            legDetails?.TravelSteps,
+            options.flattenProperties,
+          );
+        }
+
         // If includeTravelStepStartPositions is requested, we'll include a Point feature for each TravelStep.
         // TravelStep start positions are useful for associating with the turn-by-turn direction information at
         // the exact location that it is needed.
-        // These features have FeatureType = "TravelStep".
-        if (options.includeTravelStepLines || options.includeTravelStepStartPositions) {
-          extractNestedFeaturesIntoCollection(routeCollection, "TravelStep", legLineString, legDetails?.TravelSteps, {
-            flattenProperties: options.flattenProperties,
-            includeLines: options.includeTravelStepLines,
-            includeStartPoints: options.includeTravelStepStartPositions,
-          });
+        // These features have FeatureType = "TravelStepStartPosition".
+        if (options.includeTravelStepStartPositions) {
+          extractNestedPointsIntoCollection(
+            routeCollection,
+            "TravelStepStartPosition",
+            legLineString,
+            legDetails?.TravelSteps,
+            options.flattenProperties,
+          );
         }
 
-        // If includeSpanLines is requested, we'll include a LineString feature for each Span in each Leg in
+        // If includeSpans is requested, we'll include a LineString feature for each Span in each Leg in
         // the Route, with all the Span properties except for the GeometryOffset property.
         // These features have FeatureType = "Span".
-        if (options.includeSpanLines) {
-          extractNestedFeaturesIntoCollection(routeCollection, "Span", legLineString, legDetails?.Spans, {
-            flattenProperties: options.flattenProperties,
-            includeLines: true,
-            includeStartPoints: false,
-          });
+        if (options.includeSpans) {
+          extractNestedLinesIntoCollection(
+            routeCollection,
+            "Span",
+            legLineString,
+            legDetails?.Spans,
+            options.flattenProperties,
+          );
         }
       }
     }
@@ -575,6 +331,416 @@ export function calculateRoutesResponseToFeatureCollections(
   }
 
   return routes;
+}
+
+/** Options for converting a CalculateIsolinesResponseOptions to a GeoJSON FeatureCollection. */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface CalculateIsolinesResponseOptions extends BaseGeoRoutesOptions {}
+const defaultCalculateIsolinesResponseOptions = defaultBaseGeoRoutesOptions;
+
+/**
+ * This converts a CalculateIsolineResponse to a GeoJSON FeatureCollection which contains one Feature for each isoline
+ * in the response. Isolines can contain both polygons for isoline regions and lines for connectors between regions
+ * (such as ferry travel), so each Feature is a GeometryCollection that can contain a mix of Polygons and LineStrings.
+ *
+ * Any feature that is missing its geometry in the response or has invalid geometry will throw an Error.
+ *
+ * @example Drawing an isolines response with multiple isoline regions and connector lines.
+ *
+ * ```js
+ *         // Set up command to calculate isolines
+ *         const calculateIsolinesCommand =
+ *             new amazonLocationClient.routes.CalculateIsolinesCommand(params);
+ *
+ *         try {
+ *             const response = await client.send(calculateIsolinesCommand);
+ *
+ *             const collection = amazonLocationDataConverter.calculateIsolinesResponseToFeatureCollection(response, {
+ *                 flattenProperties: true
+ *                 });
+ *
+ *             // Add the results as a GeoJSON source
+ *             map.addSource('isolines', { type: 'geojson', data: collection});
+ *
+ *             // Add a layer for drawing the isoline polygon regions.
+ *             // It's important to filter the geometry type to polygons, because any connector lines
+ *             // in the results would still try to draw a filled region on one side of the line.
+ *             // These are being drawn as partially translucent so that overlapping isoline regions
+ *             // additively get more opaque.
+ *             map.addLayer({
+ *                 id: 'isolines',
+ *                 type: 'fill',
+ *                 source: 'isolines',
+ *                 layout: {
+ *                 },
+ *                 paint: {
+ *                     "fill-color": "#3887be",
+ *                     'fill-opacity': 0.6
+ *                 },
+ *                 'filter': ['==', ['geometry-type'], 'Polygon']
+ *             });
+ *
+ *             // Draw any connector lines that exist in the result.
+ *             // It's important to filter the geometry type to LineStrings. Otherwise, any polygons
+ *             // would have their outlines drawn here as well.
+ *             map.addLayer({
+ *                 id: 'isolines-connector',
+ *                 type: 'line',
+ *                 source: 'isolines',
+ *                 layout: {
+ *                     'line-join': 'round',
+ *                     'line-cap': 'round'
+ *                 },
+ *                 paint: {
+ *                     'line-color': '#FF0000',  // Default color
+ *                     'line-width': 3,
+ *                     'line-opacity': 0.75
+ *                 },
+ *                 'filter': ['==', ['geometry-type'], 'LineString']
+ *             });
+ * ```
+ */
+export function calculateIsolinesResponseToFeatureCollection(
+  isolinesResponse: CalculateIsolinesResponse,
+  options?: CalculateIsolinesResponseOptions,
+): FeatureCollection<GeometryCollection> {
+  // Set any options that weren't passed in to the default values.
+  options = { ...defaultCalculateIsolinesResponseOptions, ...options };
+
+  const isolines: FeatureCollection<GeometryCollection> = {
+    type: "FeatureCollection",
+    features: [],
+  };
+
+  // CalculateIsolines can return multiple distinct isolines, so loop through and create
+  // a Feature containing a GeometryCollection for each isoline.
+  for (const isoline of isolinesResponse.Isolines) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { Geometries, Connections, ...properties } = isoline;
+
+    const feature: Feature<GeometryCollection> = {
+      type: "Feature",
+      id: isolines.features.length,
+      properties: options.flattenProperties ? flattenProperties(properties, "") : properties,
+      geometry: {
+        type: "GeometryCollection",
+        geometries: [],
+      },
+    };
+
+    // Add all the isoline polygons into the GeometryCollection.
+    for (const geometry of isoline.Geometries) {
+      const polygon = createPolygon(geometry);
+      if (polygon.coordinates.length > 0) {
+        feature.geometry.geometries.push(polygon);
+      }
+    }
+
+    // Add all the isoline connection lines into the GeometryCollection.
+    for (const connection of isoline.Connections) {
+      const connectionLine = createLineString(connection.Geometry);
+      if (connectionLine.coordinates.length > 1) {
+        feature.geometry.geometries.push(connectionLine);
+      }
+    }
+
+    // As long as this feature has at least one polygon or line, add it to the result set.
+    if (feature.geometry.geometries.length > 0) {
+      isolines.features.push(feature);
+    }
+  }
+
+  return isolines;
+}
+
+/** Options for converting an OptimizeWaypointsResponse to a GeoJSON FeatureCollection. */
+// While we currently don't have any members, we expose it as an interface instead of a type
+// so that the generated typedoc has the base options listed for it.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface OptimizeWaypointsResponseOptions extends BaseGeoRoutesOptions {}
+const defaultOptimizeWaypointsResponseOptions = defaultBaseGeoRoutesOptions;
+
+/**
+ * This converts an OptimizeWaypointsResponse to a GeoJSON FeatureCollection which contains one Feature for each
+ * waypoint in the response. The response can contain either impeding waypoints or optimized waypoints. They will both
+ * get added into the GeoJSON with a FeatureType property of ImpedingWaypoint or OptimizedWaypoint respectively.
+ *
+ * @example Drawing labels underneath the waypoints that show the optimized order.
+ *
+ * ```js
+ *         // Set up command to optimize waypoints
+ *         const optimizeWaypointsCommand =
+ *             new amazonLocationClient.routes.OptimizeWaypointsCommand(params);
+ *
+ *         try {
+ *             const response = await client.send(optimizeWaypointsCommand);
+ *
+ *             const collection = amazonLocationDataConverter.optimizeWaypointsResponseToFeatureCollection(response, {
+ *                 flattenProperties: true
+ *                 });
+ *
+ *             // Add the GeoJSON collection as a source to the map
+ *             map.addSource('waypoints', { type: 'geojson', data: collection});
+ *
+ *             // Add a layer that draws the numeric id of each point underneath the location.
+ *             map.addLayer({
+ *                 id: 'waypoint-numbers',
+ *                 type: 'symbol',
+ *                 source: 'waypoints',
+ *                 layout: {
+ *                     'text-field': ['id'],
+ *                     "text-font": ["Amazon Ember Regular"],
+ *                     'text-size': 18,
+ *                     'text-offset': [0, 1.5],
+ *                     'text-anchor': 'bottom'
+ *                 },
+ *                 paint: {
+ *                     'text-color': '#000000',
+ *                     'text-halo-color': '#FFFFFF',
+ *                     'text-halo-width': 1
+ *                 },
+ *             });
+ * ```
+ */
+export function optimizeWaypointsResponseToFeatureCollection(
+  waypointsResponse: OptimizeWaypointsResponse,
+  options?: OptimizeWaypointsResponseOptions,
+): FeatureCollection<Point> {
+  const waypoints: FeatureCollection<Point> = {
+    type: "FeatureCollection",
+    features: [],
+  };
+
+  // Set any options that weren't passed in to the default values.
+  options = { ...defaultOptimizeWaypointsResponseOptions, ...options };
+
+  // If there are impeding waypoints that cause the optimize call to fail, add them to the GeoJSON result
+  // with a FeatureType of ImpedingWaypoint.
+  for (const impedingWaypoint of waypointsResponse.ImpedingWaypoints) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { Position, ...properties } = impedingWaypoint;
+    properties["FeatureType"] = "ImpedingWaypoint";
+    addFeatureToCollection(waypoints, options.flattenProperties, properties, {
+      type: "Point",
+      coordinates: impedingWaypoint.Position,
+    });
+  }
+
+  // If the waypoints were optimized successfully, add them to the GeoJSON result with a
+  // FeatureType of OptimizedWaypoint.
+  for (const optimizedWaypoint of waypointsResponse.OptimizedWaypoints) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { Position, ...properties } = optimizedWaypoint;
+    properties["FeatureType"] = "OptimizedWaypoint";
+    addFeatureToCollection(waypoints, options.flattenProperties, properties, {
+      type: "Point",
+      coordinates: optimizedWaypoint.Position,
+    });
+  }
+
+  return waypoints;
+}
+
+/** Options for converting an SnapToRoadsResponseOptions to a GeoJSON FeatureCollection. */
+export interface SnapToRoadsResponseOptions extends BaseGeoRoutesOptions {
+  /**
+   * Optionally creates a LineString Feature for the snapped route geometry.
+   *
+   * @default true
+   */
+  includeSnappedGeometry?: boolean;
+  /**
+   * Optionally creates a Point Feature for each original trace point submitted.
+   *
+   * @default false
+   */
+  includeSnappedTracePointOriginalPositions?: boolean;
+  /**
+   * Optionally creates a Point Feature for each snapped trace point.
+   *
+   * @default false
+   */
+  includeSnappedTracePointSnappedPositions?: boolean;
+  /**
+   * Optionally creates a LineString Feature containing a line from the submitted trace point to the snapped trace point
+   * for each submitted point.
+   *
+   * @default false
+   */
+  includeOriginalToSnappedPositionLines?: boolean;
+}
+
+const defaultSnapToRoadsResponseOptions = {
+  ...defaultBaseGeoRoutesOptions,
+  includeSnappedGeometry: true,
+  includeSnappedTracePointOriginalPositions: false,
+  includeSnappedTracePointSnappedPositions: false,
+  includeOriginalToSnappedPositionLines: false,
+};
+
+/**
+ * This converts a SnapToRoadsResponse to a GeoJSON FeatureCollection. The FeatureCollection may optionally contain any
+ * combination of the following:
+ *
+ * - A LineString Feature with the snapped route geometry, if includeSnappedGeometry is true.
+ * - Point Features for each original trace point, if includeSnappedTracePointOriginalPositions is true.
+ * - Point Features for each snapped trace point, if includeSnappedTracePointSnappedPositions is true.
+ * - LineString Features for each snap line (line from original to snapped trace point), if
+ *   includeOriginalToSnappedPositionLines is true.
+ *
+ * Each Feature contains a `FeatureType` property that can be used to distinguish between the types of features if
+ * multiple are requested during the conversion:
+ *
+ * - `SnappedGeometry`: The snapped route geometry.
+ * - `SnappedTracePointOriginalPosition`: The original submitted trace point.
+ * - `SnappedTracePointSnappedPosition`: The snapped trace point.
+ * - `OriginalToSnappedPositionLine`: A line from the original trace point to the corresponding snapped trace point.
+ *
+ * @example Drawing the snapped route, dots for each snapped trace point, and lines from the original trace points to
+ * the snapped trace points.
+ *
+ * ```js
+ *         // Set up command to optimize waypoints
+ *         const snapToRoadsCommand =
+ *             new amazonLocationClient.routes.SnapToRoadsCommand(params);
+ *
+ *         try {
+ *             const response = await client.send(snapToRoadsCommand);
+ *
+ *             const collection = amazonLocationDataConverter.snapToRoadsResponseToFeatureCollection(response, {
+ *                 flattenProperties: true,
+ *                 includeSnappedGeometry: true,
+ *                 includeSnappedTracePointOriginalPositions: true,
+ *                 includeSnappedTracePointSnappedPositions: true,
+ *                 includeOriginalToSnappedPositionLines: true
+ *                 });
+ *
+ *             // Add the GeoJSON results as a source to the map.
+ *             map.addSource('snapped', { type: 'geojson', data: collection});
+ *
+ *             // Add a layer that only draws the snapped route calculated from the trace points.
+ *             // This is done by filtering the FeatureType to SnappedGeometry.
+ *             map.addLayer({
+ *                 id: 'SnappedGeometry',
+ *                 type: 'line',
+ *                 source: 'snapped',
+ *                 layout: {
+ *                     'line-join': 'round',
+ *                     'line-cap': 'round'
+ *                 },
+ *                 paint: {
+ *                     'line-color': '#3887be',  // Default color
+ *                     'line-width': 3,
+ *                     'line-opacity': 0.75
+ *                 },
+ *                 filter: ['==', ['get', 'FeatureType'], 'SnappedGeometry']
+ *             });
+ *
+ *             // Add a layer that only draws the lines from the submitted points to the snapped points.
+ *             // We draw these separately so that we can draw these in a different color than the route.
+ *             // Alternatively, we could've used a case statement on the line-color to switch it.
+ *             map.addLayer({
+ *                 id: 'snappedLines',
+ *                 type: 'line',
+ *                 source: 'snapped',
+ *                 layout: {
+ *                     'line-join': 'round',
+ *                     'line-cap': 'round'
+ *                 },
+ *                 paint: {
+ *                     'line-color': '#FF0000',  // Default color
+ *                     'line-width': 3,
+ *                     'line-opacity': 0.75
+ *                 },
+ *                 filter: ['==', ['get', 'FeatureType'], 'OriginalToSnappedPositionLine']
+ *             });
+ *
+ *             // Add a layer that only draws circles at the snapped trace points.
+ *             map.addLayer({
+ *                 id: 'snappedTracePoints',
+ *                 type: 'circle',
+ *                 source: 'snapped',
+ *                 filter: ['all',
+ *                     ['==', ['get', 'FeatureType'], 'SnappedTracePointSnappedPosition']
+ *                 ],
+ *                 paint: {
+ *                     'circle-radius': 5,
+ *                     'circle-color': '#FF0000'
+ *                 }
+ *             });
+ * ```
+ */
+export function snapToRoadsResponseToFeatureCollection(
+  snapToRoadsResponse: SnapToRoadsResponse,
+  options?: SnapToRoadsResponseOptions,
+): FeatureCollection<Point | LineString> {
+  // Set any options that weren't passed in to the default values.
+  options = { ...defaultSnapToRoadsResponseOptions, ...options };
+
+  const snappedFeatures: FeatureCollection<Point | LineString> = {
+    type: "FeatureCollection",
+    features: [],
+  };
+
+  // Optionally include a LineString for the route that all the TracePoints seem to trace out.
+  if (options.includeSnappedGeometry) {
+    // Create a shallow copy of the passed-in properties and remove "$metadata", which can appear
+    // in Response objects from the AWS SDK. Since $metadata is only metadata about the API call and
+    // not a part of the Response data, we don't want or need it to appear in the generated GeoJSON.
+    // We also remove SnappedGeometry, SnappedGeometryFormat, and SnappedTracePoints since these are
+    // all redundant with the geometry we're returning in the GeoJSON.
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { SnappedGeometry, SnappedGeometryFormat, SnappedTracePoints, ...properties } = snapToRoadsResponse;
+    properties["FeatureType"] = "SnappedGeometry";
+    delete properties["$metadata"];
+
+    addFeatureToCollection(
+      snappedFeatures,
+      options.flattenProperties,
+      properties,
+      createLineString(snapToRoadsResponse.SnappedGeometry),
+    );
+  }
+
+  for (const snappedTracePoint of snapToRoadsResponse.SnappedTracePoints) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { OriginalPosition, SnappedPosition, ...tracePointProperties } = snappedTracePoint;
+
+    // Optionally include a Point for each original TracePoint submitted.
+    if (options.includeSnappedTracePointOriginalPositions) {
+      const originalProperties = { ...tracePointProperties };
+      originalProperties["FeatureType"] = "SnappedTracePointOriginalPosition";
+      addFeatureToCollection(snappedFeatures, options.flattenProperties, originalProperties, {
+        type: "Point",
+        coordinates: snappedTracePoint.OriginalPosition,
+      });
+    }
+
+    // Optionally include a Point for each snapped TracePoint submitted.
+    if (options.includeSnappedTracePointSnappedPositions) {
+      const snappedProperties = { ...tracePointProperties };
+      snappedProperties["FeatureType"] = "SnappedTracePointSnappedPosition";
+      addFeatureToCollection(snappedFeatures, options.flattenProperties, snappedProperties, {
+        type: "Point",
+        coordinates: snappedTracePoint.SnappedPosition,
+      });
+    }
+
+    // Optionally include a LineString for the line between the original and snapped TracePoint.
+    if (options.includeOriginalToSnappedPositionLines) {
+      const snapLineProperties = { ...tracePointProperties };
+      snapLineProperties["FeatureType"] = "OriginalToSnappedPositionLine";
+      addFeatureToCollection(snappedFeatures, options.flattenProperties, snapLineProperties, {
+        type: "LineString",
+        coordinates: [snappedTracePoint.OriginalPosition, snappedTracePoint.SnappedPosition],
+      });
+    }
+  }
+
+  return snappedFeatures;
 }
 
 /**
@@ -600,12 +766,14 @@ function addFeatureToCollection(
 }
 
 /**
- * Helper function to create a GeoJSON LineString from a compressed or uncompressed RouteLegGeometry.
+ * Helper function to create a GeoJSON LineString from a compressed or uncompressed Geometry.
  *
- * @param geometry The RouteLegGeometry to convert.
+ * @param geometry The LineString/Polyline geometry to convert.
  * @returns A GeoJSON LineString.
  */
-function createLineString(geometry: RouteLegGeometry): LineString {
+function createLineString(
+  geometry: RouteLegGeometry | IsolineConnectionGeometry | RoadSnapSnappedGeometry,
+): LineString {
   if (geometry.LineString) {
     return {
       type: "LineString",
@@ -614,7 +782,26 @@ function createLineString(geometry: RouteLegGeometry): LineString {
   } else if (geometry.Polyline) {
     return decodeToLineString(geometry.Polyline);
   } else {
-    return { type: "LineString", coordinates: [] };
+    throw Error("Response is missing both the LineString and Polyline fields for the geometry.");
+  }
+}
+
+/**
+ * Helper function to create a GeoJSON Polygon from a compressed or uncompressed Geometry.
+ *
+ * @param geometry The IsolineShapeGeometry to convert.
+ * @returns A GeoJSON Polygon.
+ */
+function createPolygon(geometry: IsolineShapeGeometry): Polygon {
+  if (geometry.Polygon) {
+    return {
+      type: "Polygon",
+      coordinates: geometry.Polygon,
+    };
+  } else if (geometry.PolylinePolygon) {
+    return decodeToPolygon(geometry.PolylinePolygon);
+  } else {
+    throw Error("Response is missing both the Polygon and PolylinePolygon fields for the geometry.");
   }
 }
 
@@ -622,21 +809,17 @@ function createLineString(geometry: RouteLegGeometry): LineString {
  * Helper function to extract nested features into a FeatureCollection.
  *
  * @param features The FeatureCollection to add the features to.
- * @param featureType The value to add as a FeatureType property.
+ * @param lineFeatureType The value to add as a FeatureType property for extracted lines.
  * @param lineString The LineString to extract geometry from for the nested features.
  * @param featureList The list of features to extract.
- * @param options The options for extracting the features.
+ * @param flattenProperties Whether to flatten the properties or not.
  */
-function extractNestedFeaturesIntoCollection(
+function extractNestedLinesIntoCollection(
   features: FeatureCollection<Point | LineString>,
-  featureType: string,
+  lineFeatureType: string,
   lineString: LineString,
-  featureList: Array<unknown>,
-  options: {
-    flattenProperties: boolean;
-    includeLines: boolean;
-    includeStartPoints: boolean;
-  },
+  featureList: Array<object>,
+  flattenProperties: boolean,
 ): void {
   if (!featureList) return;
 
@@ -644,25 +827,58 @@ function extractNestedFeaturesIntoCollection(
     // The featureList array contains an array of entries that each contain a GeometryOffset. The
     // GeometryOffset of the entry is the starting coordinate value of that entry, and it ends at
     // the GeometryOffset of the next entry, or at the end of the LineString if there are no more entries.
-    const stepLineString = structuredClone(lineString);
-    stepLineString.coordinates = stepLineString.coordinates.slice(
+    const stepLineString = { ...lineString };
+    stepLineString.coordinates = lineString.coordinates.slice(
       feature["GeometryOffset"],
       index < featureList.length - 1 ? featureList[index + 1]["GeometryOffset"] + 1 : lineString.coordinates.length,
     );
 
-    // Create a copy of the properties with GeometryOffset removed, and FeatureType added.
-    /* eslint @typescript-eslint/no-unused-vars: ["error", { "ignoreRestSiblings": true }] */
-    const featureProperties = structuredClone(feature);
-    delete featureProperties["GeometryOffset"];
-    featureProperties["FeatureType"] = featureType;
-
-    // If this entry has a valid LineString, and we're including lines, add it to the FeatureCollection.
-    if (options.includeLines && stepLineString.coordinates.length > 1) {
-      addFeatureToCollection(features, options.flattenProperties, featureProperties, stepLineString);
+    // If this entry has a valid LineString add it to the FeatureCollection.
+    if (stepLineString.coordinates.length > 1) {
+      // Create a copy of the properties with GeometryOffset removed, and FeatureType added.
+      const featureProperties = { ...feature };
+      delete featureProperties["GeometryOffset"];
+      featureProperties["FeatureType"] = lineFeatureType;
+      addFeatureToCollection(features, flattenProperties, featureProperties, stepLineString);
     }
-    // If this entry has a valid Position, and we're including Points, add it to the FeatureCollection.
-    if (options.includeStartPoints && stepLineString.coordinates.length > 0) {
-      addFeatureToCollection(features, options.flattenProperties, featureProperties, {
+  }
+}
+
+/**
+ * Helper function to extract nested features into a FeatureCollection.
+ *
+ * @param features The FeatureCollection to add the features to.
+ * @param startPointFeatureType The value to add as a FeatureType property for extracted start points.
+ * @param lineString The LineString to extract geometry from for the nested features.
+ * @param featureList The list of features to extract.
+ * @param flattenProperties Whether to flatten the properties or not.
+ */
+function extractNestedPointsIntoCollection(
+  features: FeatureCollection<Point | LineString>,
+  startPointFeatureType: string,
+  lineString: LineString,
+  featureList: Array<object>,
+  flattenProperties: boolean,
+): void {
+  if (!featureList) return;
+
+  for (const [index, feature] of featureList.entries()) {
+    // The featureList array contains an array of entries that each contain a GeometryOffset. The
+    // GeometryOffset of the entry is the starting coordinate value of that entry, and it ends at
+    // the GeometryOffset of the next entry, or at the end of the LineString if there are no more entries.
+    const stepLineString = { ...lineString };
+    stepLineString.coordinates = lineString.coordinates.slice(
+      feature["GeometryOffset"],
+      index < featureList.length - 1 ? featureList[index + 1]["GeometryOffset"] + 1 : lineString.coordinates.length,
+    );
+
+    // If this entry has a valid Position add it to the FeatureCollection.
+    if (stepLineString.coordinates.length > 0) {
+      // Create a copy of the properties with GeometryOffset removed, and FeatureType added.
+      const featureProperties = { ...feature };
+      delete featureProperties["GeometryOffset"];
+      featureProperties["FeatureType"] = startPointFeatureType;
+      addFeatureToCollection(features, flattenProperties, featureProperties, {
         type: "Point",
         coordinates: stepLineString.coordinates[0],
       });
