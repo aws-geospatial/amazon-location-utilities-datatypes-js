@@ -13,7 +13,7 @@ npm install @aws/amazon-location-utilities-datatypes
 Importing in an HTML file for usage directly in the browser.
 
 ```html
-<script src="https://www.unpkg.com/@aws/amazon-location-utilities-datatypes@1.x/dist/amazonLocationDataConverter.js"></script>
+<script src="https://www.unpkg.com/@aws/amazon-location-utilities-datatypes@1"></script>
 ```
 
 # Usage
@@ -49,9 +49,9 @@ Utility functions will be within `amazonLocationDataConverter`.
 
 ```html
 <!-- Importing Amazon Location Client -->
-<script src="https://www.unpkg.com/@aws/amazon-location-client@1.x/dist/amazonLocationClient.js"></script>
+<script src="https://www.unpkg.com/@aws/amazon-location-client@1"></script>
 <!-- Importing the utility library from an HTML file -->
-<script src="https://www.unpkg.com/@aws/amazon-location-utilities-datatypes@1.x/dist/amazonLocationDataConverter.js"></script>
+<script src="https://www.unpkg.com/@aws/amazon-location-utilities-datatypes@1"></script>
 ```
 
 ```javascript
