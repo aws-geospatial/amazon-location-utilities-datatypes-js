@@ -6,7 +6,7 @@ import {
   CalculateIsolinesResponse,
   OptimizeWaypointsResponse,
   SnapToRoadsResponse,
-} from "@aws-sdk/client-georoutes";
+} from "@aws-sdk/client-geo-routes";
 import {
   calculateRoutesResponseToFeatureCollections,
   calculateIsolinesResponseToFeatureCollection,
@@ -248,7 +248,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [1, 2] } },
                 Departure: { Place: { Position: [3, 4] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -290,7 +289,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [1, 2] } },
                 Departure: { Place: { Position: [3, 4] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -331,7 +329,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [1, 2] } },
                 Departure: { Place: { Position: [3, 4] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -406,7 +403,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               PedestrianLegDetails: {
                 Arrival: { Place: { Position: [3, 4] } },
                 Departure: { Place: { Position: [1, 2] } },
-                AfterTravelSteps: [],
                 Notices: [],
                 PassThroughWaypoints: [],
                 TravelSteps: [
@@ -690,7 +686,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [1, 2] } },
                 Departure: { Place: { Position: [3, 4] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -768,7 +763,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [7, 8] } },
                 Departure: { Place: { Position: [1, 2] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -869,7 +863,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [7, 8] } },
                 Departure: { Place: { Position: [1, 2] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -970,7 +963,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [7, 8] } },
                 Departure: { Place: { Position: [1, 2] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -1067,7 +1059,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [7, 8] } },
                 Departure: { Place: { Position: [1, 2] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -1174,7 +1165,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [7, 8] } },
                 Departure: { Place: { Position: [1, 2] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -1264,7 +1254,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [7, 8] } },
                 Departure: { Place: { Position: [1, 2] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],
@@ -1324,7 +1313,6 @@ describe("calculateRoutesResponseToFeatureCollections", () => {
               TravelMode: "Car",
               Type: "Vehicle",
               VehicleLegDetails: {
-                AfterTravelSteps: [],
                 Arrival: { Place: { Position: [7, 8] } },
                 Departure: { Place: { Position: [1, 2] } },
                 Incidents: [{ Type: "Accident" }, { Type: "Congestion" }],

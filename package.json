@@ -65,9 +65,9 @@
     "!(*.{js,ts})": "prettier --write --ignore-unknown"
   },
   "dependencies": {
-    "@aws-sdk/client-geoplaces": "file:temp_clients/amzn-geoplaces-client-0.0.1.tgz",
-    "@aws-sdk/client-georoutes": "file:temp_clients/amzn-georoutes-client-0.0.1.tgz",
     "@aws-geospatial/polyline": "file:temp_clients/polyline.tgz",
+    "@aws-sdk/client-geo-places": "file:temp_clients/aws-sdk-client-geo-places-3.679.0.tgz",
+    "@aws-sdk/client-geo-routes": "file:temp_clients/aws-sdk-client-geo-routes-3.680.0.tgz",
     "@aws-sdk/client-location": "^3.621.0",
     "@turf/circle": "^6.5.0",
     "@types/geojson": "^7946.0.10"

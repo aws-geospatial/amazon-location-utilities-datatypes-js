@@ -10,7 +10,7 @@ import {
   SearchNearbyResponse,
   SearchTextResponse,
   SuggestResponse,
-} from "@aws-sdk/client-geoplaces";
+} from "@aws-sdk/client-geo-places";
 
 import { flattenProperties, emptyFeatureCollection } from "./utils";
 

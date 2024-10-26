@@ -11,7 +11,7 @@ import {
   OptimizeWaypointsResponse,
   SnapToRoadsResponse,
   RoadSnapSnappedGeometry,
-} from "@aws-sdk/client-georoutes";
+} from "@aws-sdk/client-geo-routes";
 
 import { flattenProperties } from "./utils";
 import { decodeToLineString, decodeToPolygon } from "@aws-geospatial/polyline";
