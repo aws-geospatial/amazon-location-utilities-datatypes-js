@@ -65,10 +65,10 @@
     "!(*.{js,ts})": "prettier --write --ignore-unknown"
   },
   "dependencies": {
-    "@aws-geospatial/polyline": "file:temp_clients/polyline.tgz",
     "@aws-sdk/client-geo-places": "file:temp_clients/aws-sdk-client-geo-places-3.679.0.tgz",
     "@aws-sdk/client-geo-routes": "file:temp_clients/aws-sdk-client-geo-routes-3.680.0.tgz",
     "@aws-sdk/client-location": "^3.621.0",
+    "@aws/polyline": "^0.1.0",
     "@turf/circle": "^6.5.0",
     "@types/geojson": "^7946.0.10"
   },
@@ -77,6 +77,7 @@
     "@babel/preset-env": "^7.21.5",
     "@babel/preset-typescript": "^7.21.5",
     "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^25.0.2",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@turf/distance": "^6.5.0",
     "@types/jest": "^29.5.0",

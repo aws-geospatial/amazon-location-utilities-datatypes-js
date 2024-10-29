@@ -15,7 +15,7 @@ import {
 } from "./georoutes-converter";
 import { FeatureCollection } from "geojson";
 import { emptyFeatureCollection } from "./utils";
-import { encodeFromLngLatArray } from "@aws-geospatial/polyline";
+import { encodeFromLngLatArray } from "@aws/polyline";
 
 describe("calculateRoutesResponseToFeatureCollections", () => {
   it("should throw error if Legs are missing geometry", () => {

@@ -14,7 +14,7 @@ import {
 } from "@aws-sdk/client-geo-routes";
 
 import { flattenProperties } from "./utils";
-import { decodeToLineString, decodeToPolygon } from "@aws-geospatial/polyline";
+import { decodeToLineString, decodeToPolygon } from "@aws/polyline";
 
 /**
  * Base options for converting a GeoRoutes response to a GeoJSON FeatureCollection.
