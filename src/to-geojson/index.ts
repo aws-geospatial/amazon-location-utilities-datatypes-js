@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from "./place-converter";
+export * from "./geoplaces-converter";
+export * from "./georoutes-converter";
 export * from "./device-position-converter";
 export * from "./route-converter";
 export * from "./geofence-converter";

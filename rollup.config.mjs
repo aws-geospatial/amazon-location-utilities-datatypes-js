@@ -3,6 +3,7 @@
 
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { getBabelOutputPlugin } from "@rollup/plugin-babel";
+import commonjs from "@rollup/plugin-commonjs";
 
 const banner = `
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -16,6 +17,7 @@ export default {
     nodeResolve({
       browser: true,
     }),
+    commonjs(),
   ],
 
   output: [
