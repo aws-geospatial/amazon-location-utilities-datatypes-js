@@ -2,11 +2,11 @@
 
 Utilities to translate geospatial data types used by [Amazon Location Service](https://aws.amazon.com/location/) from / to well-known geospatial data types such as GeoJSON.
 
-# Installation
+## Installation
 
 Install this library from NPM for usage with modules:
 
-```
+```shell
 npm install @aws/amazon-location-utilities-datatypes
 ```
 
@@ -16,7 +16,7 @@ Importing in an HTML file for usage directly in the browser.
 <script src="https://cdn.jsdelivr.net/npm/@aws/amazon-location-utilities-datatypes@1"></script>
 ```
 
-# Usage
+## Usage
 
 Import the library and call the utility functions in the top-level namespace as needed. You can find more details about these functions in the [Documentation](#documentation) section.
 
@@ -64,11 +64,11 @@ const response = await client.send(command);
 const featureCollection = amazonLocationDataConverter.placeToFeatureCollection(response);
 ```
 
-# Documentation
+## Documentation
 
 Detailed documentation can be found under `/docs/index.html` after generating it by running:
 
-```
+```shell
 npm run typedoc
 ```
 
@@ -334,7 +334,7 @@ Examples:
 
 The GeoRoutes converters will additionally throw an Error() if the geometry in the passed-in response is invalid.
 
-# Getting Help
+## Getting Help
 
 The best way to interact with our team is through GitHub.
 You can [open an issue](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/issues/new/choose) and choose from one of our templates for
@@ -347,11 +347,11 @@ Please make sure to check out our resources too before opening an issue:
 
 - Our [Changelog](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/master/CHANGELOG.md) for recent changes.
 
-# Contributing
+## Contributing
 
 We welcome community contributions and pull requests. See [CONTRIBUTING.md](https://github.com/aws-geospatial/amazon-location-utilities-datatypes-js/blob/master/CONTRIBUTING.md) for information on how to set up a development environment and submit code.
 
-# License
+## License
 
 Amazon Location Utilities - Data Types for JavaScript is distributed under the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0),
