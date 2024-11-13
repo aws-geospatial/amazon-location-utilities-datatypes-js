@@ -1710,6 +1710,59 @@ describe("calculateIsolinesResponseToFeatureCollection", () => {
 
     expect(calculateIsolinesResponseToFeatureCollection(input, { flattenProperties: true })).toEqual(expectedResult);
   });
+
+  it("should return a Polygon (not a GeometryCollection) if no LineString is produced", () => {
+    const input: CalculateIsolinesResponse = {
+      IsolineGeometryFormat: "FlexiblePolyline",
+      PricingBucket: "bucket",
+      Isolines: [
+        {
+          Connections: [],
+          Geometries: [
+            {
+              PolylinePolygon: [
+                encodeFromLngLatArray([
+                  [0, 0],
+                  [10, 0],
+                  [10, 10],
+                  [0, 10],
+                  [0, 0],
+                ]),
+              ],
+            },
+          ],
+          TimeThreshold: 1000,
+        },
+      ],
+    };
+
+    const expectedResult: FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          id: 0,
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [0, 0],
+                [10, 0],
+                [10, 10],
+                [0, 10],
+                [0, 0],
+              ],
+            ],
+          },
+          properties: {
+            TimeThreshold: 1000,
+          },
+        },
+      ],
+    };
+
+    expect(calculateIsolinesResponseToFeatureCollection(input, { flattenProperties: false })).toEqual(expectedResult);
+  });
 });
 
 describe("optimizeWaypointsResponseToFeatureCollection", () => {
