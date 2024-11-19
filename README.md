@@ -86,6 +86,86 @@ const request = {
 };
 ```
 
+### featureCollectionToRoadSnapTracePointList
+
+Converts a GeoJSON FeatureCollection with Point Features to an array of RoadSnapTracePoint, so the result can be used to assemble the request to SnapToRoads API.
+
+```javascript
+const featureCollection = { ... };
+const request = {
+  Tracepoints: featureCollectionToRoadSnapTracePointList(featureCollection),
+};
+```
+
+## CSV to Amazon Location Data Types
+
+### csvStringToRoadSnapTracePointList
+
+Converts a CSV string to an array of RoadSnapTracePoint, so the result can be used to assemble the request to SnapToRoads API.
+The first line contains the attribute names, the subsequent lines the data in temporal order.
+
+```javascript
+const csvString = "....";
+const request = {
+  Tracepoints: csvStringToRoadSnapTracePointList(csvString),
+};
+```
+
+## GPX to Amazon Location Data Types
+
+### gpxToRoadSnapTracePointList
+
+Converts a GPX string to an array of RoadSnapTracePoint, so the result can be used to assemble the request to SnapToRoads API.
+
+```javascript
+const gpxString = "....";
+const request = {
+  Tracepoints: gpxToRoadSnapTracePointList(gpxString),
+};
+```
+
+## KML to Amazon Location Data Types
+
+### kmlStringToRoadSnapTracePointList
+
+Converts a KML string to an array of RoadSnapTracePoint, so the result can be used to assemble the request to SnapToRoads API.
+
+```javascript
+const kmlString = "....";
+const request = {
+  Tracepoints: kmlStringToRoadSnapTracePointList(kmlString),
+};
+```
+
+## NMEA to Amazon Location Data Types
+
+### nmeaStringToRoadSnapTracePointList
+
+Converts a NMEA string containing $GPRMC and/or $GPGGA records to an array of RoadSnapTracePoint, so the result can be
+used to assemble the request to SnapToRoads API.
+
+```javascript
+const nmeaString = "....";
+const request = {
+  Tracepoints: nmeaStringToRoadSnapTracePointList(nmeaString),
+};
+```
+
+## Flexible Polyline to Amazon Location Data Types
+
+### flexiblePolylineStringToRoadSnapTracePointList
+
+Converts a Flexible Polyline string to an array of RoadSnapTracePoint, so the result can be used to assemble the request
+to SnapToRoads API.
+
+```javascript
+const flexiblePolylineString = "....";
+const request = {
+  Tracepoints: flexiblePolylineStringToRoadSnapTracePointList(flexiblePolylineString),
+};
+__;
+```
+
 ## Amazon Location Data Types to GeoJSON
 
 ### devicePositionsToFeatureCollection
