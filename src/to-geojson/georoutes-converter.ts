@@ -343,7 +343,8 @@ const defaultCalculateIsolinesResponseOptions = defaultBaseGeoRoutesOptions;
 /**
  * This converts a CalculateIsolineResponse to a GeoJSON FeatureCollection which contains one Feature for each isoline
  * in the response. Isolines can contain both polygons for isoline regions and lines for connectors between regions
- * (such as ferry travel), so each Feature is a GeometryCollection that can contain a mix of Polygons and LineStrings.
+ * (such as ferry travel), so each Feature contains either a GeometryCollection with a mix of Polygons and LineStrings
+ * or a single Polygon.
  *
  * Any feature that is missing its geometry in the response or has invalid geometry will throw an Error.
  *
@@ -405,11 +406,11 @@ const defaultCalculateIsolinesResponseOptions = defaultBaseGeoRoutesOptions;
 export function calculateIsolinesResponseToFeatureCollection(
   isolinesResponse: CalculateIsolinesResponse,
   options?: CalculateIsolinesResponseOptions,
-): FeatureCollection<GeometryCollection> {
+): FeatureCollection<GeometryCollection<Polygon | LineString> | Polygon> {
   // Set any options that weren't passed in to the default values.
   options = { ...defaultCalculateIsolinesResponseOptions, ...options };
 
-  const isolines: FeatureCollection<GeometryCollection> = {
+  const isolines: FeatureCollection<GeometryCollection<Polygon | LineString> | Polygon> = {
     type: "FeatureCollection",
     features: [],
   };
@@ -420,7 +421,7 @@ export function calculateIsolinesResponseToFeatureCollection(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { Geometries, Connections, ...properties } = isoline;
 
-    const feature: Feature<GeometryCollection> = {
+    const feature: Feature<GeometryCollection<Polygon | LineString>> = {
       type: "Feature",
       id: isolines.features.length,
       properties: options.flattenProperties ? flattenProperties(properties, "") : properties,
@@ -448,7 +449,20 @@ export function calculateIsolinesResponseToFeatureCollection(
 
     // As long as this feature has at least one polygon or line, add it to the result set.
     if (feature.geometry.geometries.length > 0) {
-      isolines.features.push(feature);
+      if (feature.geometry.geometries.length === 1 && feature.geometry.geometries[0].type === "Polygon") {
+        // GeometryCollections containing single geometries trigger GeoJSONLint warnings:
+        //     GeometryCollection with a single geometry should be avoided in favor of single part
+        //     or a single object of multi-part type
+        // in practice, the geometry type for single-geometry isolines is Polygon; LineStrings are
+        // supplemental and appear when multiple polygons are present, representing the connection
+        // between those areas
+        isolines.features.push({
+          ...feature,
+          geometry: feature.geometry.geometries[0],
+        });
+      } else {
+        isolines.features.push(feature);
+      }
     }
   }
 

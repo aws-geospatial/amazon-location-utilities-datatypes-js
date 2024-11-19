@@ -346,11 +346,13 @@ const featureCollections = calculateRoutesResponseToFeatureCollections(response)
 
 ### calculateIsolinesResponseToFeatureCollection
 
-This converts a CalculateIsolineResponse from the standalone Routes SDK to a GeoJSON FeatureCollection which contains one Feature for each isoline
-in the response. Isolines can contain both polygons for isoline regions and lines for connectors between regions
-(such as ferry travel), so each Feature is a GeometryCollection that can contain a mix of Polygons and LineStrings.
-The `flattenProperties` option will flatten the nested response data into a flat properties list.
-This option is enabled by default, as it makes the data easier to use from within MapLibre expressions.
+This converts a CalculateIsolineResponse from the standalone Routes SDK to a GeoJSON
+FeatureCollection which contains one Feature for each isoline in the response. Isolines can contain
+both polygons for isoline regions and lines for connectors between regions (such as ferry travel),
+so each Feature contains either a GeometryCollection with a mix of Polygons and LineStrings or a
+single Polygon. The `flattenProperties` option will flatten the nested response data into a flat
+properties list. This option is enabled by default, as it makes the data easier to use from within
+MapLibre expressions.
 
 Any feature that is missing its geometry in the response or has invalid geometry will throw an Error().
 
