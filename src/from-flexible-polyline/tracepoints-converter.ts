@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { decode } from "@here/flexpolyline";
+import { decodeToLngLatArray } from "@aws/polyline";
 import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
 
 /**
@@ -28,21 +28,12 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
 export function flexiblePolylineStringToRoadSnapTracePointList(fpString: string) {
   if (fpString.startsWith("FP:")) {
     const encodedString = fpString.slice(3);
-    const decodedString = decode(encodedString);
+    const decodedLngLatArray = decodeToLngLatArray(encodedString);
 
-    if (decodedString.polyline) {
-      return decodedString.polyline.map((coordinates) => convertCoordinatesToTracepoint(coordinates));
+    if (decodedLngLatArray) {
+      return decodedLngLatArray.map((coordinates) => ({ Position: coordinates }));
     }
   } else {
     console.log("Invalid input: Flexible polyline string should start with 'FP:'");
   }
-}
-
-function convertCoordinatesToTracepoint(coordinates): RoadSnapTracePoint {
-  const longitude = Math.round(coordinates[1] * Math.pow(10, 6)) / Math.pow(10, 6);
-  const latitude = Math.round(coordinates[0] * Math.pow(10, 6)) / Math.pow(10, 6);
-
-  return {
-    Position: [longitude, latitude],
-  };
 }

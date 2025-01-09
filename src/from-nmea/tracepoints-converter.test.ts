@@ -7,11 +7,11 @@ describe("nmeaStringToRoadSnapTracePointList", () => {
 
     expect(nmeaStringToRoadSnapTracePointList(nmeaString)).toEqual([
       {
-        Position: [-17.185333, 49.274167],
+        Position: [-123.18533333333333, 49.274166666666666],
       },
       {
-        Position: [22.456, -37.860833],
-        Speed: 41.48,
+        Position: [145.12266666666667, -37.86083333333333],
+        Speed: 41.4848,
         Timestamp: "1994-11-19T22:54:46.000Z",
       },
     ]);

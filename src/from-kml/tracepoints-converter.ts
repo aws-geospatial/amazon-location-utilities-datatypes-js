@@ -7,6 +7,30 @@ import * as fastXmlParser from "fast-xml-parser";
  * It converts a KML string to an array of RoadSnapTracePoint, so the result can be used to assemble the request to
  * SnapToRoads API.
  *
+ * Expected KML structures:
+ *
+ * 1. LineString format:
+ *
+ *    - Contains a <Document> element with one or more <Placemark> elements.
+ *    - Each <Placemark> has a <LineString> element with a <coordinates> child.
+ *    - Coordinates are listed as a single string, separated by whitespace.
+ * 2. Multiple Point format:
+ *
+ *    - Contains a <Document> element with multiple <Placemark> elements.
+ *    - Each <Placemark> has a <Point> element with a <coordinates> child.
+ *    - Each <coordinates> element contains a single point.
+ *
+ * Coordinate format in both cases:
+ *
+ * - Each coordinate is represented as: longitude,latitude,altitude
+ * - Example: 8.64965,50.20365,0.0
+ *
+ * Notes:
+ *
+ * - Altitude is ignored during parsing as it's not included in SnapToRoads API requests.
+ * - This function does not process KML timestamp or speed data.
+ * - Other KML elements like <name>, <description>, <extrude>, <tessellate>, and <altitudeMode> are ignored.
+ *
  * @example Converting a KML string
  *
  * Input:
@@ -67,7 +91,7 @@ export function kmlStringToRoadSnapTracePointList(kmlString: string) {
       const [lon, lat] = placemark.Point.coordinates.split(",").map(Number);
       return [
         {
-          Position: roundCoordinates(lon, lat),
+          Position: [parseFloat(lon), parseFloat(lat)],
         },
       ];
     } else if (placemark.LineString) {
@@ -75,18 +99,11 @@ export function kmlStringToRoadSnapTracePointList(kmlString: string) {
       return coordinates.map((coord) => {
         const [lon, lat] = coord.split(",").map(Number);
         return {
-          Position: roundCoordinates(lon, lat),
+          Position: [parseFloat(lon), parseFloat(lat)],
         };
       });
     } else {
       console.log("Invalid input: unrecognized placemark format'");
     }
   });
-}
-
-function roundCoordinates(lon, lat): [number, number] {
-  return [
-    Math.round(parseFloat(lon) * Math.pow(10, 6)) / Math.pow(10, 6),
-    Math.round(parseFloat(lat) * Math.pow(10, 6)) / Math.pow(10, 6),
-  ];
 }

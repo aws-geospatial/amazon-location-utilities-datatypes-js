@@ -5,8 +5,21 @@ import * as fastXmlParser from "fast-xml-parser";
 import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
 
 /**
- * It converts a GPX string to an array of RoadSnapTracePoint, so the result can be used to assemble the request to
- * SnapToRoads API.
+ * It converts a GPX string with trkType to an array of RoadSnapTracePoint, so the result can be used to assemble the
+ * request to SnapToRoads API.
+ *
+ * Each trace point in the GPX can include the following information:
+ *
+ * - Coordinates (always present, used): Latitude and longitude in WGS84 degrees. Example: <trkpt lat="48.0289225"
+ *   lon="-4.298227">
+ * - Timestamp (optional, used): In UTC time zone. Example: <time>2013-07-15T10:24:52Z</time>
+ * - Speed (optional, used): In meters per second, within the extensions element. Example:
+ *   <extensions><speed>21.9432334</speed></extensions>
+ * - Elevation (optional, ignored): In meters above the WGS84 ellipsoid. Example: <ele>102.5999</ele>
+ * - HDOP (optional, ignored): Horizontal Dilution of Precision. Example: <hdop>15.0</hdop>
+ *
+ * Note: Elevation and HDOP, if present, are ignored during parsing as they are not included in the SnapToRoads API
+ * request.
  *
  * @example Converting a GPX string
  *
@@ -17,7 +30,7 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gte="http://www.gpstrackeditor.com/xmlschemas/General/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" targetNamespace="http://www.topografix.com/GPX/1/1" elementFormDefault="qualified" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
  *   <metadata>
  *     <name>sample_san_francisco.gpx</name>
- *     <desc>Sample data collected in San Francisco: demonstrating urban navigation, including steep hills and busy intersections</desc>
+ *     <desc>Sample data</desc>
  *   </metadata>
  *   <trk>
  *     <name>San Francisco</name>
@@ -87,13 +100,13 @@ export function gpxToRoadSnapTracePointList(content) {
 
 function convertGPXToTracepoint(trackPoint): RoadSnapTracePoint | undefined {
   if (trackPoint) {
-    const longitude = Math.round(parseFloat(trackPoint.lon) * Math.pow(10, 6)) / Math.pow(10, 6);
-    const latitude = Math.round(parseFloat(trackPoint.lat) * Math.pow(10, 6)) / Math.pow(10, 6);
+    const longitude = parseFloat(trackPoint.lon);
+    const latitude = parseFloat(trackPoint.lat);
 
     const roadSnapTracePoint = { Position: [longitude, latitude] };
     if (trackPoint.extensions.speed) {
       const speedKMPH = trackPoint.extensions.speed * 3.6;
-      roadSnapTracePoint["Speed"] = Math.round(speedKMPH * 100) / 100;
+      roadSnapTracePoint["Speed"] = speedKMPH;
     }
     if (trackPoint.time) {
       roadSnapTracePoint["Timestamp"] = trackPoint.time;

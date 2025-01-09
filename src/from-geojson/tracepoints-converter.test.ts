@@ -42,7 +42,7 @@ describe("featureCollectionToRoadSnapTracePointList", () => {
       {
         Position: [8.53379056, 50.16352417],
         Timestamp: "2019-08-20T15:13:27.512Z",
-        Speed: 2.34,
+        Speed: 2.3400000000000003,
         Heading: 177.3,
       },
       {

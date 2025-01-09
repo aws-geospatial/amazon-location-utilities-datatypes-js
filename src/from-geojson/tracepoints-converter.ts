@@ -8,7 +8,17 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * It converts a FeatureCollection with Point Features to an array of RoadSnapTracePoint, so the result can be used to
  * assemble the request to SnapToRoads API.
  *
- * @example Converting geojson tracepoints
+ * @remarks
+ * The function processes the following properties:
+ *
+ * - Timestamp_msec
+ * - Speed_mps, speed_kmh or speed_mph
+ * - Heading
+ *
+ * Other properties that may be present in the input (such as provider, accuracy, and altitude) are ignored.
+ *
+ * Note: If multiple speed fields are provided, speed_kmh takes precedence.
+ * @example Converting GeoJSON tracepoints
  *
  * Input:
  *
@@ -69,11 +79,23 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * ]
  * ```
  */
-export function featureCollectionToRoadSnapTracePointList(featureCollection: FeatureCollection<Point>) {
+
+type TracePointProperties = {
+  timestamp_msec?: number;
+  speed_mps?: number;
+  speed_kmh?: number;
+  speed_mph?: number;
+  heading?: number;
+  [key: string]: any; // This allows for additional properties
+};
+
+export function featureCollectionToRoadSnapTracePointList(
+  featureCollection: FeatureCollection<Point, TracePointProperties>,
+) {
   return featureCollection.features.map((feature) => convertFeatureToTracepoint(feature));
 }
 
-function convertFeatureToTracepoint(feature: Feature<Point>): RoadSnapTracePoint | undefined {
+function convertFeatureToTracepoint(feature: Feature<Point, TracePointProperties>): RoadSnapTracePoint | undefined {
   if (feature) {
     const roadSnapTracePoint = {
       Position: feature.geometry.coordinates,
@@ -84,13 +106,17 @@ function convertFeatureToTracepoint(feature: Feature<Point>): RoadSnapTracePoint
       roadSnapTracePoint["Timestamp"] = timestamp.toISOString();
     }
 
-    if (feature.properties.speed_mps) {
+    if (feature.properties.speed_kmh !== undefined) {
+      roadSnapTracePoint["Speed"] = feature.properties.speed_kmh;
+    } else if (feature.properties.speed_mps !== undefined) {
       const speedKMPH = feature.properties.speed_mps * 3.6;
-      roadSnapTracePoint["Speed"] = Math.round(speedKMPH * 100) / 100;
+      roadSnapTracePoint["Speed"] = speedKMPH;
+    } else if (feature.properties.speed_mph !== undefined) {
+      roadSnapTracePoint["Speed"] = feature.properties.speed_mph * 1.60934;
     }
 
     if (feature.properties.heading) {
-      roadSnapTracePoint["Heading"] = parseFloat(feature.properties.heading);
+      roadSnapTracePoint["Heading"] = feature.properties.heading;
     }
 
     return roadSnapTracePoint;

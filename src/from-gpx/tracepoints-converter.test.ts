@@ -6,7 +6,7 @@ describe("gpxToRoadSnapTracePointList", () => {
       <gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gte="http://www.gpstrackeditor.com/xmlschemas/General/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" targetNamespace="http://www.topografix.com/GPX/1/1" elementFormDefault="qualified" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
         <metadata>
             <name>sample_rome.gpx</name>
-            <desc>Sample data collected in Rome: showing finding main roads, ignored waypoints, illegal one ways( near #45, #81), gate traversal(near #72), passing  no-through-traffic zone (near #79)</desc>
+            <desc>Sample data</desc>
         </metadata>
         <trk>
             <name>Rome</name>

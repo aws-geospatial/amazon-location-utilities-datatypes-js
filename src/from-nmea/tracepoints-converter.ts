@@ -2,12 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
-
-const PIVOT_YEAR = 80;
+import { parseGPGGA, parseGPRMC } from "./utils";
 
 /**
- * It converts a NMEA string containing $GPRMC and/or $GPGGA records to an array of RoadSnapTracePoint, so the result
+ * It converts a NMEA string containing $GPRMC and/or $GPGGA sentences to an array of RoadSnapTracePoint, so the result
  * can be used to assemble the request to SnapToRoads API.
+ *
+ * Supported NMEA sentences:
+ *
+ * 1. GPGGA (Global Positioning System Fix Data): Format:
+ *    $GPGGA,time,latitude,N/S,longitude,E/W,fix,satellites,HDOP,altitude,M,geoidHeight,M,DGPS,checksum Example:
+ *    $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47
+ * 2. GPRMC (Recommended Minimum Specific GNSS Data): Format:
+ *    $GPRMC,time,status,latitude,latitudeDirection(N/S),longitude,longitudeDirection(E/W),speed(knots),trackMadeGood(degrees),date,magneticVariation,E/W,mode_checksum
+ *    Example: $GPRMC,203522.00,A,5109.0262308,N,11401.8407342,W,0.004,133.4,130522,0.0,E,D_2B
+ *
+ * Notes:
+ *
+ * - The function will use GPGGA for position and time if available, falling back to GPRMC if GPGGA is not present.
+ * - Speed is extracted from GPRMC sentences only.
+ * - Altitude, HDOP, magnetic variation, and other fields not relevant to SnapToRoads API are ignored.
+ * - NMEA sentences use the format ddmm.mmmm for latitude and dddmm.mmmm for longitude, which this function converts to
+ *   decimal degrees.
+ * - Multiple sentences should be separated by newline characters.
+ * - The mode field is not always present in GPRMC sentences and is not included in the example format.
  *
  * @example Converting a NMEA string
  *
@@ -51,116 +69,4 @@ function convertNMEAToTracepoint(record: string): RoadSnapTracePoint | null {
     console.error("Unsupported NMEA record: ", record.split(",")[0]);
     return null;
   }
-}
-
-function parseGPRMC(record: string): RoadSnapTracePoint | null {
-  const parts = record.split(",");
-
-  if (parts.length < 12) {
-    console.error("Invalid GPRMC record: not enough fields");
-    return null;
-  }
-
-  const [
-    ,
-    // skipping identifier
-    timeStr, // skipping status
-    ,
-    latitudeStr,
-    latitudeDir,
-    longitudeStr,
-    longitudeDir,
-    speedStr, // skipping track
-    ,
-    dateStr, // skipping magnetic variation // skipping variation direction
-    ,
-    ,
-  ] = parts;
-
-  const latitude = parseCoordinate(latitudeStr, latitudeDir);
-  const longitude = parseCoordinate(longitudeStr, longitudeDir);
-
-  const roadSnapTracePoint = { Position: [longitude, latitude] };
-
-  if (timeStr && dateStr) {
-    const timestamp = convertToISOTime(dateStr, timeStr);
-    roadSnapTracePoint["Timestamp"] = timestamp;
-  }
-  if (speedStr) {
-    const speedKMPH = parseFloat(speedStr) * 1.852; // convert knots to km/h
-    roadSnapTracePoint["Speed"] = Math.round(speedKMPH * 100) / 100;
-  }
-
-  return roadSnapTracePoint;
-}
-
-function parseGPGGA(record: string): RoadSnapTracePoint | null {
-  const parts = record.split(",");
-
-  if (parts.length < 14) {
-    console.error("Invalid GPGGA record: not enough fields");
-    return null;
-  }
-
-  const [
-    ,
-    ,
-    // skipping identifier
-    // skipping time. GPGGA doesn't contain date information, so we cannot construct the timestamp.
-    latitudeStr,
-    latitudeDir,
-    longitudeStr,
-    longitudeDir, // skipping fix quality // skipping number of satellites // skipping HDOP // skipping altitude // skipping altitude unit // skipping geoid height // skipping geoid height unit // skipping time since last DGPS update // skipping DGPS station ID
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-  ] = parts;
-
-  const latitude = parseCoordinate(latitudeStr, latitudeDir);
-  const longitude = parseCoordinate(longitudeStr, longitudeDir);
-
-  return { Position: [longitude, latitude] };
-}
-
-function parseCoordinate(coord: string, direction: string): number {
-  if (!coord || !direction) return 0;
-  const degrees = parseFloat(coord.slice(0, 2));
-  const minutes = parseFloat(coord.slice(2)) / 60;
-  let result = degrees + minutes;
-  if (direction === "S" || direction === "W") {
-    result = -result;
-  }
-
-  return Math.round(result * Math.pow(10, 6)) / Math.pow(10, 6);
-}
-function convertToISOTime(dateStr: string, timeStr: string): string {
-  if (dateStr.length !== 6 || timeStr.length < 6) {
-    throw new Error("Invalid date or time format");
-  }
-
-  // Extract components from the date string
-  const day = dateStr.slice(0, 2);
-  const month = dateStr.slice(2, 4);
-  const year = dateStr.slice(4, 6);
-
-  // Extract components from the time string
-  const hours = timeStr.slice(0, 2);
-  const minutes = timeStr.slice(2, 4);
-  const seconds = timeStr.slice(4, 6);
-  const milliseconds = timeStr.length > 6 ? timeStr.slice(7) : "000";
-
-  // Use a fixed windowing approach to interpret two-digit years:
-  // Years 00-79 are interpreted as 2000-2079
-  // Years 80-99 are interpreted as 1980-1999
-  const fullYear = parseInt(year) < PIVOT_YEAR ? `20${year}` : `19${year}`;
-
-  const isoString = `${fullYear}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
-
-  return isoString;
 }
