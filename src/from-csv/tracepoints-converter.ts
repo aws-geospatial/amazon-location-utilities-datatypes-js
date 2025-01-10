@@ -30,7 +30,7 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * @param csvString - The input CSV string to be parsed.
  * @param options - Optional configuration for parsing.
  * @param options.columnMapping - Object mapping expected column names to actual CSV column names.
- * @returns An array of RfoadSnapTracePoint objects.
+ * @returns An array of RoadSnapTracePoint objects.
  */
 
 type ColumnMapping = {
