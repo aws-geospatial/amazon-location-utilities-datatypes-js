@@ -24,8 +24,9 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  *
  * @example Basic usage with header row
  *
- *     const result = csvStringToRoadSnapTracePointList(csvString);
- *     ```typescript
+ * ```typescript
+ * const result = csvStringToRoadSnapTracePointList(csvString);
+ * ```
  *
  * @example Without header row, providing column names // NEW: Added example
  *
@@ -46,12 +47,12 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * });
  * ```
  *
- * @param csvString - The input CSV string to be parsed. A header row must be present.
- * @param options - Optional configuration for parsing.
- * @param options.columnMapping - Object mapping expected column names to actual CSV column names.
- * @param options.columnNames - Array of column names for CSV without headers.
- * @param options.hasHeaders - Whether the CSV includes a header row (default: true).
- * @returns An array of RoadSnapTracePoint objects.
+ * @param csvString The input CSV string to be parsed
+ * @param options Optional configuration for parsing
+ * @param options.columnMapping Object mapping expected column names to actual CSV column names
+ * @param options.columnNames Array of column names for CSV without headers
+ * @param options.hasHeaders Whether the CSV includes a header row (default: true)
+ * @returns An array of RoadSnapTracePoint objects
  */
 
 type ColumnMapping = {
