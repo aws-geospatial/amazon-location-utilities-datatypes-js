@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as tj from "@tmcw/togeojson";
-import { Feature, FeatureCollection, Point, Position } from "geojson";
-import { JSDOM } from "jsdom";
+import { DOMParser } from "xmldom";
 import { featureCollectionToRoadSnapTracePointList } from "../from-geojson";
+import { convertToPointFeatureCollection } from "../utils";
 
 /**
  * It converts a GPX string containing tracks to an array of RoadSnapTracePoint, so the result can be used to assemble
@@ -73,46 +73,38 @@ import { featureCollectionToRoadSnapTracePointList } from "../from-geojson";
  */
 
 export function gpxToRoadSnapTracePointList(content) {
-  const dom = new JSDOM(content);
-  const gpxDoc = dom.window.document;
+  const parser = new DOMParser();
+  const gpxDoc = parser.parseFromString(content, "text/xml");
 
-  // Convert GPX to GeoJSON
+  // Convert to GeoJSON using the XML namespace for GPX
+  gpxDoc.documentElement.setAttribute("xmlns", "http://www.topografix.com/GPX/1/1");
   const geoJSON = tj.gpx(gpxDoc);
-  const features: Feature<Point>[] = [];
 
-  geoJSON.features.forEach((feature) => {
-    if (feature.geometry.type === "Point") {
-      features.push(feature as Feature<Point>);
-    } else if (feature.geometry.type === "LineString") {
-      const trackPoints = gpxDoc.getElementsByTagName("trkpt");
-      feature.geometry.coordinates.forEach((coord: Position, index: number) => {
-        const trkpt = trackPoints[index];
-        const timeElement = trkpt.getElementsByTagName("time")[0];
-        const speedElement = trkpt.getElementsByTagName("speed")[0];
+  const trackPoints = gpxDoc.getElementsByTagName("trkpt");
 
-        features.push({
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: coord,
-          },
-          properties: {
-            ...(timeElement?.textContent && {
-              timestamp_msec: new Date(timeElement.textContent).getTime(),
-            }),
-            ...(speedElement?.textContent && {
-              speed_mps: parseFloat(speedElement.textContent),
-            }),
-          },
-        });
-      });
-    }
-  });
+  const pointFeatures = geoJSON.features.map((feature) =>
+    convertToPointFeatureCollection(feature, (index) => {
+      if (index === undefined) return {};
 
-  const convertedGeoJson: FeatureCollection<Point, any> = {
+      const trkpt = trackPoints[index];
+      const timeElement = trkpt.getElementsByTagName("time")[0];
+      const speedElement = trkpt.getElementsByTagName("speed")[0];
+
+      return {
+        ...(timeElement?.textContent && {
+          timestamp_msec: new Date(timeElement.textContent).getTime(),
+        }),
+        ...(speedElement?.textContent && {
+          speed_mps: parseFloat(speedElement.textContent),
+        }),
+      };
+    }),
+  );
+
+  const allFeatures = pointFeatures.flatMap((fc) => fc.features);
+
+  return featureCollectionToRoadSnapTracePointList({
     type: "FeatureCollection",
-    features: features,
-  };
-
-  return featureCollectionToRoadSnapTracePointList(convertedGeoJson);
+    features: allFeatures,
+  });
 }

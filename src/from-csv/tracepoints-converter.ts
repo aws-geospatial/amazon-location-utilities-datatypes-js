@@ -28,7 +28,7 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * const result = csvStringToRoadSnapTracePointList(csvString);
  * ```
  *
- * @example Without header row, providing column names // NEW: Added example
+ * @example Without header row, providing column names
  *
  * ```typescript
  * const result = csvStringToRoadSnapTracePointList(csvString, {
@@ -86,7 +86,7 @@ export function csvStringToRoadSnapTracePointList(csvString: string, options: Pa
         acc[key] = header;
         return acc;
       }, {})
-    : columnNames.reduce((acc, columnName, index) => {
+    : columnNames.reduce((acc, columnName) => {
         const key = Object.keys(columnMapping).find((k) => columnMapping[k] === columnName) || columnName;
         acc[key] = columnName;
         return acc;

@@ -85,7 +85,7 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * ```
  */
 
-type TracePointProperties = {
+export type TracePointProperties = {
   timestamp_msec?: number;
   speed_mps?: number;
   speed_kmh?: number;

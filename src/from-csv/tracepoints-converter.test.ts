@@ -120,6 +120,10 @@ describe("csvToRoadSnapTracePointList", () => {
     ]);
   });
   it("should handle CSV without headers using columnNames and columnMapping", () => {
+    // NOTE: This test demonstrates the API's capability but doesn't represent a practical use case.
+    // In real usage, when providing column names for a headerless CSV (using columnNames),
+    // you should use the expected names directly (latitude, longitude, etc.) rather than
+    // using different names and mapping them.
     const csvString = "37.774930,-122.419424,18.29\n" + "37.775032,-122.420157,22.61";
 
     const result = csvStringToRoadSnapTracePointList(csvString, {

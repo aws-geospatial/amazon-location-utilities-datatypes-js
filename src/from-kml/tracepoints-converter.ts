@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as tj from "@tmcw/togeojson";
-import { JSDOM } from "jsdom";
+import { DOMParser } from "xmldom";
 import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
-import { Feature, FeatureCollection, Point } from "geojson";
 import { featureCollectionToRoadSnapTracePointList } from "../from-geojson";
+import { convertToPointFeatureCollection } from "../utils";
 
 /**
  * It converts a KML string to an array of RoadSnapTracePoint, so the result can be used to assemble the request to
@@ -85,69 +85,25 @@ import { featureCollectionToRoadSnapTracePointList } from "../from-geojson";
  */
 
 export function kmlStringToRoadSnapTracePointList(content: string): RoadSnapTracePoint[] {
-  const dom = new JSDOM(content, {
-    contentType: "text/xml",
-  });
+  const parser = new DOMParser();
+  const kmlDoc = parser.parseFromString(content, "text/xml");
 
-  // Convert KML to GeoJSON
-  const geoJson = tj.kml(dom.window.document);
-  console.log("First feature properties:", JSON.stringify(geoJson.features[0].properties, null, 2));
-  const features: Feature<Point>[] = geoJson.features.flatMap((feature) => {
-    console.log("Feature properties:", JSON.stringify(feature.properties, null, 2));
-    if (feature.geometry.type === "Point") {
-      const [lon, lat] = (feature.geometry as Point).coordinates;
-      return [
-        {
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [lon, lat],
-          },
-          properties: {
-            ...(feature.properties.timestamp && {
-              timestamp_msec: new Date(feature.properties.timestamp).getTime(),
-            }),
-          },
-        },
-      ];
-    } else if (feature.geometry.type === "LineString") {
-      return feature.geometry.coordinates.map((coord) => ({
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [coord[0], coord[1]], // Take only longitude and latitude
-        },
-        properties: {
-          ...(feature.properties.timestamp && {
-            timestamp_msec: new Date(feature.properties.timestamp).getTime(),
-          }),
-        },
-      }));
-    }
-    return [];
-  });
+  // Convert to GeoJSON using the XML namespace for KML
+  kmlDoc.documentElement.setAttribute("xmlns", "http://www.opengis.net/kml/2.2");
+  const geoJson = tj.kml(kmlDoc);
 
-  const convertedGeoJson: FeatureCollection<Point, any> = {
+  const pointFeatures = geoJson.features.map((feature) =>
+    convertToPointFeatureCollection(feature, () => ({
+      ...(feature.properties.timestamp && {
+        timestamp_msec: new Date(feature.properties.timestamp).getTime(),
+      }),
+    })),
+  );
+
+  const allFeatures = pointFeatures.flatMap((fc) => fc.features);
+
+  return featureCollectionToRoadSnapTracePointList({
     type: "FeatureCollection",
-    features,
-  };
-
-  return featureCollectionToRoadSnapTracePointList(convertedGeoJson);
-}
-
-function processProperties(properties: any): any {
-  const result: any = {};
-
-  // Process timestamp
-  if (properties.when) {
-    result.timestamp_msec = new Date(properties.timeStamp).getTime();
-  }
-
-  // Process speed
-  // Assuming speed is in m/s in the KML, convert to km/h for consistency
-  if (properties.speed) {
-    result.speed_mps = parseFloat(properties.speed);
-  }
-
-  return result;
+    features: allFeatures,
+  });
 }
