@@ -21,21 +21,20 @@ export function parseGPRMC(record: string): RoadSnapTracePoint | null {
     return null;
   }
 
-  const [
-    ,
-    // skipping identifier
-    timeStr, // skipping status
-    ,
-    latitudeStr,
-    latitudeDir,
-    longitudeStr,
-    longitudeDir,
-    speedStr, // skipping track
-    ,
-    dateStr, // skipping magnetic variation // skipping variation direction
-    ,
-    ,
-  ] = parts;
+  // Field order in GPRMC:
+  // 0: identifier (skipped)
+  // 1: time
+  // 2: status (skipped)
+  // 3: latitude
+  // 4: latitude direction (N/S)
+  // 5: longitude
+  // 6: longitude direction (E/W)
+  // 7: speed in knots
+  // 8: track (skipped)
+  // 9: date
+  // 10: magnetic variation (skipped)
+  // 11: variation direction (skipped)
+  const [, timeStr, , latitudeStr, latitudeDir, longitudeStr, longitudeDir, speedStr, , dateStr, , ,] = parts;
 
   const latitude = parseLatitude(latitudeStr, latitudeDir);
   const longitude = parseLongitude(longitudeStr, longitudeDir);
@@ -62,25 +61,22 @@ export function parseGPGGA(record: string): RoadSnapTracePoint | null {
     return null;
   }
 
-  const [
-    ,
-    ,
-    // skipping identifier
-    // skipping time. GPGGA doesn't contain date information, so we cannot construct the timestamp.
-    latitudeStr,
-    latitudeDir,
-    longitudeStr,
-    longitudeDir, // skipping fix quality // skipping number of satellites // skipping HDOP // skipping altitude // skipping altitude unit // skipping geoid height // skipping geoid height unit // skipping time since last DGPS update // skipping DGPS station ID
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-    ,
-  ] = parts;
+  // Field order in GPGGA:
+  // 0: identifier (skipped)
+  // 1: time (skipped - no date info available)
+  // 2: latitude
+  // 3: latitude direction (N/S)
+  // 4: longitude
+  // 5: longitude direction (E/W)
+  // 6-13: various fields (skipped) including:
+  //   - fix quality
+  //   - number of satellites
+  //   - HDOP
+  //   - altitude and unit
+  //   - geoid height and unit
+  //   - DGPS update time
+  //   - DGPS station ID
+  const [, , latitudeStr, latitudeDir, longitudeStr, longitudeDir, , ...rest] = parts;
 
   const latitude = parseLatitude(latitudeStr, latitudeDir);
   const longitude = parseLongitude(longitudeStr, longitudeDir);
