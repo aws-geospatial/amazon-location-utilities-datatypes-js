@@ -1,18 +1,20 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import * as fastXmlParser from "fast-xml-parser";
-import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
+import * as tj from "@tmcw/togeojson";
+import { Feature, FeatureCollection, Point, Position } from "geojson";
+import { JSDOM } from "jsdom";
+import { featureCollectionToRoadSnapTracePointList } from "../from-geojson";
 
 /**
- * It converts a GPX string with trkType to an array of RoadSnapTracePoint, so the result can be used to assemble the
- * request to SnapToRoads API.
+ * It converts a GPX string containing tracks to an array of RoadSnapTracePoint, so the result can be used to assemble
+ * the request to SnapToRoads API. See: https://en.wikipedia.org/wiki/GPS_Exchange_Format#Data_types.
  *
- * Each trace point in the GPX can include the following information:
+ * Each track point in the GPX can include the following information:
  *
  * - Coordinates (always present, used): Latitude and longitude in WGS84 degrees. Example: <trkpt lat="48.0289225"
  *   lon="-4.298227">
- * - Timestamp (optional, used): In UTC time zone. Example: <time>2013-07-15T10:24:52Z</time>
+ * - Timestamp (optional, used): Any ISO 8601 formatted timestamp. Example: <time>2013-07-15T10:24:52Z</time>
  * - Speed (optional, used): In meters per second, within the extensions element. Example:
  *   <extensions><speed>21.9432334</speed></extensions>
  * - Elevation (optional, ignored): In meters above the WGS84 ellipsoid. Example: <ele>102.5999</ele>
@@ -69,48 +71,48 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * ]
  * ```
  */
+
 export function gpxToRoadSnapTracePointList(content) {
-  const options = {
-    attributeNamePrefix: "",
-    attrNodeName: "attr",
-    textNodeName: "#text",
-    ignoreAttributes: false,
-    ignoreNamespace: false,
-    allowBooleanAttributes: false,
-    parseNodeValue: true,
-    parseAttributeValue: false,
-    trimValues: true,
-    cdataTagName: "__cdata",
-    cdataPositionChar: "\\c",
-    parseTrueNumberOnly: false,
-    numParseOptions: {
-      hex: true,
-      leadingZeros: true,
-      decimalSeparator: ".",
-      parseType: "number",
-    },
-    arrayMode: "strict",
+  const dom = new JSDOM(content);
+  const gpxDoc = dom.window.document;
+
+  // Convert GPX to GeoJSON
+  const geoJSON = tj.gpx(gpxDoc);
+  const features: Feature<Point>[] = [];
+
+  geoJSON.features.forEach((feature) => {
+    if (feature.geometry.type === "Point") {
+      features.push(feature as Feature<Point>);
+    } else if (feature.geometry.type === "LineString") {
+      const trackPoints = gpxDoc.getElementsByTagName("trkpt");
+      feature.geometry.coordinates.forEach((coord: Position, index: number) => {
+        const trkpt = trackPoints[index];
+        const timeElement = trkpt.getElementsByTagName("time")[0];
+        const speedElement = trkpt.getElementsByTagName("speed")[0];
+
+        features.push({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: coord,
+          },
+          properties: {
+            ...(timeElement?.textContent && {
+              timestamp_msec: new Date(timeElement.textContent).getTime(),
+            }),
+            ...(speedElement?.textContent && {
+              speed_mps: parseFloat(speedElement.textContent),
+            }),
+          },
+        });
+      });
+    }
+  });
+
+  const convertedGeoJson: FeatureCollection<Point, any> = {
+    type: "FeatureCollection",
+    features: features,
   };
-  const xmlParser = new fastXmlParser.XMLParser(options);
-  const jsonObj = xmlParser.parse(content, options);
-  const trackPoints = jsonObj.gpx.trk.trkseg.trkpt;
 
-  return trackPoints.map((trackPoint) => convertGPXToTracepoint(trackPoint));
-}
-
-function convertGPXToTracepoint(trackPoint): RoadSnapTracePoint | undefined {
-  if (trackPoint) {
-    const longitude = parseFloat(trackPoint.lon);
-    const latitude = parseFloat(trackPoint.lat);
-
-    const roadSnapTracePoint = { Position: [longitude, latitude] };
-    if (trackPoint.extensions.speed) {
-      const speedKMPH = trackPoint.extensions.speed * 3.6;
-      roadSnapTracePoint["Speed"] = speedKMPH;
-    }
-    if (trackPoint.time) {
-      roadSnapTracePoint["Timestamp"] = trackPoint.time;
-    }
-    return roadSnapTracePoint;
-  }
+  return featureCollectionToRoadSnapTracePointList(convertedGeoJson);
 }

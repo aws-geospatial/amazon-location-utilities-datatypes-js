@@ -97,4 +97,50 @@ describe("csvToRoadSnapTracePointList", () => {
       },
     ]);
   });
+  it("should handle CSV without headers using columnNames", () => {
+    const csvString =
+      "37.774930,-122.419424,18.29,2024-11-19T14:45:00Z\n" + "37.775032,-122.420157,22.61,2024-11-19T14:46:30Z";
+
+    const result = csvStringToRoadSnapTracePointList(csvString, {
+      hasHeaders: false,
+      columnNames: ["latitude", "longitude", "speed_kmh", "timestamp"],
+    });
+
+    expect(result).toEqual([
+      {
+        Position: [-122.419424, 37.77493],
+        Speed: 18.29,
+        Timestamp: "2024-11-19T14:45:00Z",
+      },
+      {
+        Position: [-122.420157, 37.775032],
+        Speed: 22.61,
+        Timestamp: "2024-11-19T14:46:30Z",
+      },
+    ]);
+  });
+  it("should handle CSV without headers using columnNames and columnMapping", () => {
+    const csvString = "37.774930,-122.419424,18.29\n" + "37.775032,-122.420157,22.61";
+
+    const result = csvStringToRoadSnapTracePointList(csvString, {
+      hasHeaders: false,
+      columnNames: ["y", "x", "speed"],
+      columnMapping: {
+        latitude: "y",
+        longitude: "x",
+        speed_kmh: "speed",
+      },
+    });
+
+    expect(result).toEqual([
+      {
+        Position: [-122.419424, 37.77493],
+        Speed: 18.29,
+      },
+      {
+        Position: [-122.420157, 37.775032],
+        Speed: 22.61,
+      },
+    ]);
+  });
 });

@@ -22,14 +22,35 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  *
  * Note: If multiple speed fields are provided, speed_kmh takes precedence.
  *
- * @example Basic usage const result = csvStringToRoadSnapTracePointList(csvString);
+ * @example Basic usage with header row
  *
- * @example With custom column mapping const result = csvStringToRoadSnapTracePointList(csvString, { columnMapping: {
- * latitude: 'y', longitude: 'x' } });
+ *     const result = csvStringToRoadSnapTracePointList(csvString);
+ *     ```typescript
  *
- * @param csvString - The input CSV string to be parsed.
+ * @example Without header row, providing column names // NEW: Added example
+ *
+ * ```typescript
+ * const result = csvStringToRoadSnapTracePointList(csvString, {
+ *   columnNames: ["latitude", "longitude", "speed_kmh"],
+ * });
+ * ```
+ *
+ * @example With custom column mapping
+ *
+ * ```typescript
+ * const result = csvStringToRoadSnapTracePointList(csvString, {
+ *   columnMapping: {
+ *     latitude: "y",
+ *     longitude: "x",
+ *   },
+ * });
+ * ```
+ *
+ * @param csvString - The input CSV string to be parsed. A header row must be present.
  * @param options - Optional configuration for parsing.
  * @param options.columnMapping - Object mapping expected column names to actual CSV column names.
+ * @param options.columnNames - Array of column names for CSV without headers.
+ * @param options.hasHeaders - Whether the CSV includes a header row (default: true).
  * @returns An array of RoadSnapTracePoint objects.
  */
 
@@ -45,22 +66,30 @@ type ColumnMapping = {
 
 interface ParseOptions {
   columnMapping?: ColumnMapping;
+  columnNames?: string[];
+  hasHeaders?: boolean;
 }
 
 export function csvStringToRoadSnapTracePointList(csvString: string, options: ParseOptions = {}): RoadSnapTracePoint[] {
-  const { columnMapping = {} } = options;
+  const { columnMapping = {}, columnNames, hasHeaders = true } = options;
 
   const records = parse(csvString, {
-    columns: true,
+    columns: hasHeaders || columnNames,
     skip_empty_lines: true,
     trim: true,
   });
 
-  const effectiveColumnMapping = Object.keys(records[0]).reduce((acc, header) => {
-    const key = Object.keys(columnMapping).find((k) => columnMapping[k] === header) || header;
-    acc[key] = header;
-    return acc;
-  }, {});
+  const effectiveColumnMapping = hasHeaders
+    ? Object.keys(records[0]).reduce((acc, header) => {
+        const key = Object.keys(columnMapping).find((k) => columnMapping[k] === header) || header;
+        acc[key] = header;
+        return acc;
+      }, {})
+    : columnNames.reduce((acc, columnName, index) => {
+        const key = Object.keys(columnMapping).find((k) => columnMapping[k] === columnName) || columnName;
+        acc[key] = columnName;
+        return acc;
+      }, {});
 
   return records.map((row) => convertCSVToTracepoint(row, effectiveColumnMapping));
 }

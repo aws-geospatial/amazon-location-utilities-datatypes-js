@@ -23,12 +23,12 @@ describe("gpxToRoadSnapTracePointList", () => {
       {
         Position: [12.419255, 41.899689],
         Speed: 36,
-        Timestamp: "2013-07-15T10:24:52Z",
+        Timestamp: "2013-07-15T10:24:52.000Z",
       },
       {
         Position: [12.420505, 41.900891],
         Speed: 36,
-        Timestamp: "2013-07-15T10:24:52Z",
+        Timestamp: "2013-07-15T10:24:52.000Z",
       },
     ]);
   });

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { decodeToLngLatArray } from "@aws/polyline";
-import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
 
 /**
  * It converts a Flexible Polyline string to an array of RoadSnapTracePoint, so the result can be used to assemble the

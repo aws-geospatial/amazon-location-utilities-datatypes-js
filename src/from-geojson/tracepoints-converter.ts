@@ -11,13 +11,18 @@ import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
  * @remarks
  * The function processes the following properties:
  *
- * - Timestamp_msec
- * - Speed_mps, speed_kmh or speed_mph
- * - Heading
+ * - `timestamp_msec`
+ * - `speed_mps`, `speed_kmh` or `speed_mph`
+ * - `heading`
  *
  * Other properties that may be present in the input (such as provider, accuracy, and altitude) are ignored.
  *
- * Note: If multiple speed fields are provided, speed_kmh takes precedence.
+ * Note: When multiple speed fields are provided, they are processed in this order of precedence:
+ *
+ * 1. Speed_kmh (used directly)
+ * 2. Speed_mps (converted to km/h)
+ * 3. Speed_mph (converted to km/h)
+ *
  * @example Converting GeoJSON tracepoints
  *
  * Input:
