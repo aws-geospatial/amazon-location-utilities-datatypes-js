@@ -76,7 +76,7 @@ export function parseGPGGA(record: string): RoadSnapTracePoint | null {
   //   - geoid height and unit
   //   - DGPS update time
   //   - DGPS station ID
-  const [, , latitudeStr, latitudeDir, longitudeStr, longitudeDir, , ...rest] = parts;
+  const [, , latitudeStr, latitudeDir, longitudeStr, longitudeDir, ...rest] = parts;
 
   const latitude = parseLatitude(latitudeStr, latitudeDir);
   const longitude = parseLongitude(longitudeStr, longitudeDir);
