@@ -405,6 +405,39 @@ const response = { ... };
 const featureCollection = snapToRoadsResponseToFeatureCollection(response)
 ```
 
+## GeoJSON Utilities
+
+### convertToPointFeatureCollection
+
+Converts GeoJSON Point or LineString features to a FeatureCollection of Points. This utility function is particularly
+useful when you need to convert complex geometries to individual points while preserving or transforming feature properties.
+
+```typescript
+const feature = {
+  type: "Feature",
+  geometry: {
+    type: "LineString",
+    coordinates: [
+      [-122.4194, 37.7749],
+      [-122.4201, 37.775],
+    ],
+  },
+  properties: { timestamp: "2024-01-01T00:00:00Z" },
+};
+```
+
+- Using default property handling (preserves existing properties or defaults to {})
+  ```typescript
+  const pointCollection = convertToPointFeatureCollection(feature);
+  ```
+- Custom property transformation
+  ```typescript
+  const pointCollectionWithCustomProps = convertToPointFeatureCollection(feature, (properties, index) => ({
+    ...properties,
+    pointNumber: index,
+  }));
+  ```
+
 ## Error Handling
 
 If the data provided to the utility functions are invalid, the entries in the data will be skipped.

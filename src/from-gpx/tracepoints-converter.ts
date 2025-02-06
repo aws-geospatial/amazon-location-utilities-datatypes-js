@@ -76,21 +76,21 @@ export function gpxToRoadSnapTracePointList(content) {
   const parser = new DOMParser();
   const gpxDoc = parser.parseFromString(content, "text/xml");
 
-  // Convert to GeoJSON using the XML namespace for GPX
-  gpxDoc.documentElement.setAttribute("xmlns", "http://www.topografix.com/GPX/1/1");
+  // Convert to GeoJSON
   const geoJSON = tj.gpx(gpxDoc);
 
   const trackPoints = gpxDoc.getElementsByTagName("trkpt");
 
   const pointFeatures = geoJSON.features.map((feature) =>
-    convertToPointFeatureCollection(feature, (index) => {
-      if (index === undefined) return {};
+    convertToPointFeatureCollection(feature, (properties, index) => {
+      if (index === undefined) return properties;
 
       const trkpt = trackPoints[index];
       const timeElement = trkpt.getElementsByTagName("time")[0];
       const speedElement = trkpt.getElementsByTagName("speed")[0];
 
       return {
+        ...properties,
         ...(timeElement?.textContent && {
           timestamp_msec: new Date(timeElement.textContent).getTime(),
         }),

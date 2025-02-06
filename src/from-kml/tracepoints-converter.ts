@@ -88,12 +88,12 @@ export function kmlStringToRoadSnapTracePointList(content: string): RoadSnapTrac
   const parser = new DOMParser();
   const kmlDoc = parser.parseFromString(content, "text/xml");
 
-  // Convert to GeoJSON using the XML namespace for KML
-  kmlDoc.documentElement.setAttribute("xmlns", "http://www.opengis.net/kml/2.2");
+  // Convert to GeoJSON
   const geoJson = tj.kml(kmlDoc);
 
   const pointFeatures = geoJson.features.map((feature) =>
-    convertToPointFeatureCollection(feature, () => ({
+    convertToPointFeatureCollection(feature, (properties) => ({
+      ...properties,
       ...(feature.properties.timestamp && {
         timestamp_msec: new Date(feature.properties.timestamp).getTime(),
       }),
