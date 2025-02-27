@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as tj from "@tmcw/togeojson";
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 import { RoadSnapTracePoint } from "@aws-sdk/client-geo-routes";
 import { featureCollectionToRoadSnapTracePointList } from "../from-geojson";
-import { convertToPointFeatureCollection } from "../utils";
+import { convertToPointFeatureCollection, isValidXMLDocument } from "../utils";
 
 /**
  * It converts a KML string to an array of RoadSnapTracePoint, so the result can be used to assemble the request to
@@ -87,6 +87,10 @@ import { convertToPointFeatureCollection } from "../utils";
 export function kmlStringToRoadSnapTracePointList(content: string): RoadSnapTracePoint[] {
   const parser = new DOMParser();
   const kmlDoc = parser.parseFromString(content, "text/xml");
+
+  if (!isValidXMLDocument(kmlDoc)) {
+    throw new Error("Invalid XML document");
+  }
 
   // Convert to GeoJSON
   const geoJson = tj.kml(kmlDoc);

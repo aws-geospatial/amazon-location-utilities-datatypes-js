@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as tj from "@tmcw/togeojson";
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 import { featureCollectionToRoadSnapTracePointList } from "../from-geojson";
-import { convertToPointFeatureCollection } from "../utils";
+import { convertToPointFeatureCollection, isValidXMLDocument } from "../utils";
 
 /**
  * It converts a GPX string containing tracks to an array of RoadSnapTracePoint, so the result can be used to assemble
@@ -76,8 +76,12 @@ export function gpxToRoadSnapTracePointList(content) {
   const parser = new DOMParser();
   const gpxDoc = parser.parseFromString(content, "text/xml");
 
+  if (!isValidXMLDocument(gpxDoc)) {
+    throw new Error("Invalid XML document");
+  }
+
   // Convert to GeoJSON
-  const geoJSON = tj.gpx(gpxDoc);
+  const geoJSON = tj.gpx(gpxDoc as Document);
 
   const trackPoints = gpxDoc.getElementsByTagName("trkpt");
 
