@@ -81,7 +81,7 @@ export function gpxToRoadSnapTracePointList(content) {
   }
 
   // Convert to GeoJSON
-  const geoJSON = tj.gpx(gpxDoc as Document);
+  const geoJSON = tj.gpx(gpxDoc);
 
   const trackPoints = gpxDoc.getElementsByTagName("trkpt");
 
