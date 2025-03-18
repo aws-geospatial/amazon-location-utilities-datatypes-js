@@ -72,7 +72,7 @@ import { convertToPointFeatureCollection, isValidXMLDocument } from "../utils";
  * ```
  */
 
-export function gpxToRoadSnapTracePointList(content) {
+export function gpxStringToRoadSnapTracePointList(content) {
   const parser = new DOMParser();
   const gpxDoc = parser.parseFromString(content, "text/xml");
 

@@ -59,6 +59,9 @@ describe("csvToRoadSnapTracePointList", () => {
 
     const result = csvStringToRoadSnapTracePointList(csvString);
 
+    // Conversion formula: km/h = (m/s) * (3600 sec/hour) * (1 km/1000 m)
+    // 3.47222 m/s = (3.47222 * 3600 / 1000) = 12.499992 km/h
+    // 4.38889 m/s = (4.38889 * 3600 / 1000) = 15.800004 km/h
     expect(result).toEqual([
       {
         Position: [-1.4704939, 53.3737131],
@@ -82,6 +85,9 @@ describe("csvToRoadSnapTracePointList", () => {
 
     const result = csvStringToRoadSnapTracePointList(csvString);
 
+    // Conversion formula: km/h = mph * 1.609344
+    // 7.76713 mph = (7.76713 * 1.609344) = 12.4999529942 km/h
+    // 9.81747 mph = (9.81747 * 1.609344) = 15.7996471698 km/h
     expect(result).toEqual([
       {
         Position: [-1.4704939, 53.3737131],

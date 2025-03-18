@@ -42,12 +42,15 @@ describe("featureCollectionToRoadSnapTracePointList", () => {
       {
         Position: [8.53379056, 50.16352417],
         Timestamp: "2019-08-20T15:13:27.512Z",
+        // Conversion formula: km/h = (m/s) * (3600 sec/hour) * (1 km/1000 m)
+        // 0.65 m/s = (0.65 * 3600 / 1000) = 2.34 km/h
         Speed: 2.3400000000000003,
         Heading: 177.3,
       },
       {
         Position: [8.5349375, 50.16338086],
         Timestamp: "2019-08-20T15:13:42.526Z",
+        // 5.45 m/s = (5.45 * 3600 / 1000) = 19.62 km/h
         Speed: 19.62,
         Heading: 69.4,
       },

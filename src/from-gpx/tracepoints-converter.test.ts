@@ -1,4 +1,4 @@
-import { gpxToRoadSnapTracePointList } from "./tracepoints-converter";
+import { gpxStringToRoadSnapTracePointList } from "./tracepoints-converter";
 
 describe("gpxToRoadSnapTracePointList", () => {
   it("should convert gpx string to RoadSnapTracePointList", () => {
@@ -19,7 +19,7 @@ describe("gpxToRoadSnapTracePointList", () => {
         </trk>
       </gpx>`;
 
-    expect(gpxToRoadSnapTracePointList(gpxString)).toEqual([
+    expect(gpxStringToRoadSnapTracePointList(gpxString)).toEqual([
       {
         Position: [12.419255, 41.899689],
         Speed: 36,
