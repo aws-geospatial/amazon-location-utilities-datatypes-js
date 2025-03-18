@@ -120,7 +120,7 @@ Converts a GPX string to an array of RoadSnapTracePoint, so the result can be us
 ```javascript
 const gpxString = "....";
 const request = {
-  Tracepoints: gpxToRoadSnapTracePointList(gpxString),
+  Tracepoints: gpxStringToRoadSnapTracePointList(gpxString),
 };
 ```
 
