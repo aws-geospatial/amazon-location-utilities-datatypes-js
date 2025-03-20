@@ -95,13 +95,21 @@ export function kmlStringToRoadSnapTracePointList(content: string): RoadSnapTrac
   // Convert to GeoJSON
   const geoJson = tj.kml(kmlDoc);
 
-  const pointFeatures = geoJson.features.map((feature) =>
-    convertToPointFeatureCollection(feature, (properties) => ({
-      ...properties,
-      ...(feature.properties.timestamp && {
-        timestamp_msec: new Date(feature.properties.timestamp).getTime(),
-      }),
-    })),
+  const pointFeatures = geoJson.features.map((feature, index) =>
+    convertToPointFeatureCollection(feature, (properties) => {
+      const newProperties = { ...properties };
+
+      if (feature.properties.timestamp) {
+        const timestamp = new Date(feature.properties.timestamp).getTime();
+        if (!isNaN(timestamp)) {
+          newProperties.timestamp_msec = timestamp;
+        } else {
+          console.error(`Invalid timestamp at index ${index}: ${feature.properties.timestamp}`);
+        }
+      }
+
+      return newProperties;
+    }),
   );
 
   const allFeatures = pointFeatures.flatMap((fc) => fc.features);

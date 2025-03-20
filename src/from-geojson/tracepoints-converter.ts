@@ -101,29 +101,34 @@ export function featureCollectionToRoadSnapTracePointList(
 }
 
 function convertFeatureToTracepoint(feature: Feature<Point, TracePointProperties>): RoadSnapTracePoint | undefined {
-  if (feature) {
-    const roadSnapTracePoint = {
-      Position: feature.geometry.coordinates,
-    };
-
-    if (feature.properties.timestamp_msec) {
-      const timestamp = new Date(feature.properties.timestamp_msec);
-      roadSnapTracePoint["Timestamp"] = timestamp.toISOString();
-    }
-
-    if (feature.properties.speed_kmh !== undefined) {
-      roadSnapTracePoint["Speed"] = feature.properties.speed_kmh;
-    } else if (feature.properties.speed_mps !== undefined) {
-      const speedKMPH = feature.properties.speed_mps * 3.6;
-      roadSnapTracePoint["Speed"] = speedKMPH;
-    } else if (feature.properties.speed_mph !== undefined) {
-      roadSnapTracePoint["Speed"] = feature.properties.speed_mph * 1.60934;
-    }
-
-    if (feature.properties.heading) {
-      roadSnapTracePoint["Heading"] = feature.properties.heading;
-    }
-
-    return roadSnapTracePoint;
+  if (!feature) {
+    throw new Error("Invalid feature: feature is null or undefined");
   }
+  if (feature.geometry.coordinates.length < 2) {
+    throw new Error("Invalid feature: coordinates must have at least 2 elements");
+  }
+
+  const roadSnapTracePoint = {
+    Position: feature.geometry.coordinates,
+  };
+
+  if (feature.properties.timestamp_msec) {
+    const timestamp = new Date(feature.properties.timestamp_msec);
+    roadSnapTracePoint["Timestamp"] = timestamp.toISOString();
+  }
+
+  if (feature.properties.speed_kmh !== undefined) {
+    roadSnapTracePoint["Speed"] = feature.properties.speed_kmh;
+  } else if (feature.properties.speed_mps !== undefined) {
+    const speedKMPH = feature.properties.speed_mps * 3.6;
+    roadSnapTracePoint["Speed"] = speedKMPH;
+  } else if (feature.properties.speed_mph !== undefined) {
+    roadSnapTracePoint["Speed"] = feature.properties.speed_mph * 1.60934;
+  }
+
+  if (feature.properties.heading) {
+    roadSnapTracePoint["Heading"] = feature.properties.heading;
+  }
+
+  return roadSnapTracePoint;
 }

@@ -104,15 +104,34 @@ function convertCSVToTracepoint(
   const longitude = parseFloat(getValue("longitude"));
   const latitude = parseFloat(getValue("latitude"));
 
+  if (isNaN(longitude) || isNaN(latitude)) {
+    throw new Error(`Invalid coordinates: latitude=${getValue("latitude")}, longitude=${getValue("longitude")}`);
+  }
+
   const roadSnapTracePoint: RoadSnapTracePoint = { Position: [longitude, latitude] };
 
   // Handle speed (only one type will be provided)
   if (columnMapping.speed_kmh) {
-    roadSnapTracePoint.Speed = parseFloat(getValue("speed_kmh"));
+    const speed = parseFloat(getValue("speed_kmh"));
+    if (isNaN(speed)) {
+      console.error(`Invalid speed_kmh value: ${getValue("speed_kmh")}`);
+    } else {
+      roadSnapTracePoint.Speed = speed;
+    }
   } else if (columnMapping.speed_mps) {
-    roadSnapTracePoint.Speed = parseFloat(getValue("speed_mps")) * 3.6;
+    const speed = parseFloat(getValue("speed_mps"));
+    if (isNaN(speed)) {
+      console.error(`Invalid speed_mps value: ${getValue("speed_mps")}`);
+    } else {
+      roadSnapTracePoint.Speed = speed * 3.6;
+    }
   } else if (columnMapping.speed_mph) {
-    roadSnapTracePoint.Speed = parseFloat(getValue("speed_mph")) * 1.60934;
+    const speed = parseFloat(getValue("speed_mph"));
+    if (isNaN(speed)) {
+      console.error(`Invalid speed_mph value: ${getValue("speed_mph")}`);
+    } else {
+      roadSnapTracePoint.Speed = speed * 1.60934;
+    }
   }
 
   const timestamp = getValue("timestamp");

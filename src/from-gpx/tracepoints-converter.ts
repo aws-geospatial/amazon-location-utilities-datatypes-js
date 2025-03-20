@@ -83,30 +83,38 @@ export function gpxStringToRoadSnapTracePointList(content) {
   // Convert to GeoJSON
   const geoJSON = tj.gpx(gpxDoc);
 
-  const trackPoints = gpxDoc.getElementsByTagName("trkpt");
-
   const pointFeatures = geoJSON.features.map((feature) =>
     convertToPointFeatureCollection(feature, (properties, index) => {
       if (index === undefined) return properties;
 
-      const trkpt = trackPoints[index];
-      const timeElement = trkpt.getElementsByTagName("time")[0];
-      const speedElement = trkpt.getElementsByTagName("speed")[0];
+      const newProperties = { ...properties };
+      if (properties.coordinateProperties?.times?.[index]) {
+        const timestamp = new Date(properties.coordinateProperties.times[index]).getTime();
+        if (isNaN(timestamp)) {
+          console.error(`Invalid timestamp at index ${index}: ${properties.coordinateProperties.times[index]}`);
+        } else {
+          newProperties.timestamp_msec = timestamp;
+        }
+      }
 
-      return {
-        ...properties,
-        ...(timeElement?.textContent && {
-          timestamp_msec: new Date(timeElement.textContent).getTime(),
-        }),
-        ...(speedElement?.textContent && {
-          speed_mps: parseFloat(speedElement.textContent),
-        }),
-      };
+      if (properties.coordinateProperties?.speeds?.[index] !== undefined) {
+        const speed = parseFloat(properties.coordinateProperties.speeds[index]);
+        if (isNaN(speed)) {
+          console.error(`Invalid speed value at index ${index}: ${properties.coordinateProperties.speeds[index]}`);
+        } else {
+          newProperties.speed_mps = speed;
+        }
+      }
+
+      return newProperties;
     }),
   );
 
   const allFeatures = pointFeatures.flatMap((fc) => fc.features);
 
+  if (allFeatures.length === 0) {
+    throw new Error("No valid features found after processing GPX string");
+  }
   return featureCollectionToRoadSnapTracePointList({
     type: "FeatureCollection",
     features: allFeatures,

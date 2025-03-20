@@ -19,7 +19,6 @@ import { parseGPGGA, parseGPRMC } from "./utils";
  *
  * Notes:
  *
- * - The function will use GPGGA for position and time if available, falling back to GPRMC if GPGGA is not present.
  * - Speed is extracted from GPRMC sentences only.
  * - Altitude, HDOP, magnetic variation, and other fields not relevant to SnapToRoads API are ignored.
  * - NMEA sentences use the format ddmm.mmmm for latitude and dddmm.mmmm for longitude, which this function converts to

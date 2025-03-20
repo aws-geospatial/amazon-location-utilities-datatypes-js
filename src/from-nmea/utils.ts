@@ -17,8 +17,7 @@ export function parseGPRMC(record: string): RoadSnapTracePoint | null {
   const parts = record.split(",");
 
   if (parts.length < 12) {
-    console.error("Invalid GPRMC record: not enough fields");
-    return null;
+    throw new Error("Invalid GPRMC record: not enough fields");
   }
 
   // Field order in GPRMC:
@@ -39,6 +38,11 @@ export function parseGPRMC(record: string): RoadSnapTracePoint | null {
   const latitude = parseLatitude(latitudeStr, latitudeDir);
   const longitude = parseLongitude(longitudeStr, longitudeDir);
 
+  if (latitude === null || longitude === null) {
+    console.error("Invalid GPRMC record: invalid coordinates");
+    return null;
+  }
+
   const roadSnapTracePoint = { Position: [longitude, latitude] };
 
   if (timeStr && dateStr) {
@@ -46,8 +50,12 @@ export function parseGPRMC(record: string): RoadSnapTracePoint | null {
     roadSnapTracePoint["Timestamp"] = timestamp;
   }
   if (speedStr) {
-    const speedKMPH = parseFloat(speedStr) * 1.852; // convert knots to km/h
-    roadSnapTracePoint["Speed"] = speedKMPH;
+    const speed = parseFloat(speedStr);
+    if (isNaN(speed)) {
+      console.error(`"Invalid GPRMC record: invalid speed`);
+    } else {
+      roadSnapTracePoint["Speed"] = speed * 1.852; // convert knots to km/h
+    }
   }
 
   return roadSnapTracePoint;
@@ -57,8 +65,7 @@ export function parseGPGGA(record: string): RoadSnapTracePoint | null {
   const parts = record.split(",");
 
   if (parts.length < 14) {
-    console.error("Invalid GPGGA record: not enough fields");
-    return null;
+    throw new Error("Invalid GPGGA record: not enough fields");
   }
 
   // Field order in GPGGA:
@@ -81,11 +88,19 @@ export function parseGPGGA(record: string): RoadSnapTracePoint | null {
   const latitude = parseLatitude(latitudeStr, latitudeDir);
   const longitude = parseLongitude(longitudeStr, longitudeDir);
 
+  if (latitude === null || longitude === null) {
+    console.error("Invalid GPRMC record: invalid coordinates");
+    return null;
+  }
+
   return { Position: [longitude, latitude] };
 }
 
 function parseLatitude(coord: string, direction: string): number {
-  if (!coord || !direction) return 0;
+  if (!coord || !direction) {
+    console.error("Invalid coordinate: missing latitude or direction");
+    return null;
+  }
   const degrees = parseFloat(coord.slice(0, 2));
   const minutes = parseFloat(coord.slice(2)) / 60;
   let result = degrees + minutes;
@@ -96,7 +111,10 @@ function parseLatitude(coord: string, direction: string): number {
 }
 
 function parseLongitude(coord: string, direction: string): number {
-  if (!coord || !direction) return 0;
+  if (!coord || !direction) {
+    console.error("Invalid coordinate: missing longitude or direction");
+    return null;
+  }
   const degrees = parseFloat(coord.slice(0, 3));
   const minutes = parseFloat(coord.slice(3)) / 60;
   let result = degrees + minutes;
@@ -108,7 +126,7 @@ function parseLongitude(coord: string, direction: string): number {
 
 function convertToISOTime(dateStr: string, timeStr: string): string {
   if (dateStr.length !== 6 || timeStr.length < 6) {
-    throw new Error("Invalid date or time format");
+    console.error("Invalid date or time format");
   }
 
   // Extract components from the date string
