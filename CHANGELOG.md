@@ -1,5 +1,11 @@
 # Changes
 
+## 1.2.1
+
+### ✨ Features and improvements
+
+- Several dependency updates
+
 ## 1.2.0
 
 ### ✨ Features and improvements
