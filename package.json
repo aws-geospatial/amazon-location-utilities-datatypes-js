@@ -68,7 +68,7 @@
     "@aws-sdk/client-geo-places": "^3.683.0",
     "@aws-sdk/client-geo-routes": "^3.683.0",
     "@aws-sdk/client-location": "^3.682.0",
-    "@aws/polyline": "^0.1.0",
+    "@aws/polyline": "^0.1.4",
     "@turf/circle": "^6.5.0",
     "@types/geojson": "^7946.0.14"
   },
