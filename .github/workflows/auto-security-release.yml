@@ -13,6 +13,9 @@ on:
         default: false
 jobs:
   run:
+    permissions:
+      contents: write
+      pull-requests: write
     uses: aws-geospatial/github-workflows-for-amazon-location/.github/workflows/auto-security-release.yml@main
     with:
       force: ${{ inputs.force }}
