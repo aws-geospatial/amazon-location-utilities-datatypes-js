@@ -1,4 +1,7 @@
 name: Auto Security Release
+permissions:
+  contents: write
+  pull-requests: write
 on:
   schedule:
     - cron: "0 19 * * 1" # Every Monday at 2pm UTC-5 (7pm UTC)
