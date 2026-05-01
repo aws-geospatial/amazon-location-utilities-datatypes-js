@@ -10,4 +10,4 @@ jobs:
   run:
     uses: aws-geospatial/github-workflows-for-amazon-location/.github/workflows/npm-audit-check.yml@main
     with:
-      package-name: "minimist@1.2.5" # TEMP: validate vuln detection path. Revert in follow-up commit.
+      package-name: "request" # TEMP: validate vuln detection path. Revert in follow-up commit.
