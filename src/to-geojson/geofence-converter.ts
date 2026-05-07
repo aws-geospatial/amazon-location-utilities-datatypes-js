@@ -226,7 +226,7 @@ export function geofencesToFeatureCollection(
   geofences: GetGeofenceResponse | PutGeofenceRequest | ListGeofencesResponse | BatchPutGeofenceRequest,
 ): FeatureCollection<Polygon> {
   if ("Entries" in geofences) {
-    return toFeatureCollection(geofences.Entries.map((geofence) => geofenceToFeature(geofence)));
+    return toFeatureCollection(geofences.Entries?.map((geofence) => geofenceToFeature(geofence)) || []);
   } else {
     return toFeatureCollection([geofenceToFeature(geofences)]);
   }
@@ -237,7 +237,7 @@ function geofenceToFeature(
 ): Feature<Polygon> | undefined {
   if (geofence) {
     const result = convertGeometryToFeature(geofence?.Geometry, geofence) as Feature<Polygon>;
-    if (result) {
+    if (result?.properties) {
       delete result.properties.Geometry;
       if ("GeofenceId" in geofence) {
         result.id = geofence.GeofenceId;

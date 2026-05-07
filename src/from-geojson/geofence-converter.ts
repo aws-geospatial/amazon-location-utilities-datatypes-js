@@ -121,10 +121,13 @@ export function featureCollectionToGeofence(
 
 function convertFeatureToGeofence(feature: Feature<Polygon>): BatchPutGeofenceRequestEntry | undefined {
   if (feature && feature.geometry?.type == "Polygon") {
+    // Generate UUID if feature.id is not provided
+    const geofenceId = feature.id ? String(feature.id) : crypto.randomUUID();
+
     if (feature.properties && "center" in feature.properties) {
       // Circular geofence
       return {
-        GeofenceId: String(feature.id),
+        GeofenceId: geofenceId,
         Geometry: {
           Circle: {
             Center: feature.properties.center,
@@ -134,7 +137,7 @@ function convertFeatureToGeofence(feature: Feature<Polygon>): BatchPutGeofenceRe
       };
     } else if (feature.geometry?.coordinates) {
       return {
-        GeofenceId: String(feature.id),
+        GeofenceId: geofenceId,
         Geometry: {
           Polygon: feature.geometry.coordinates,
         },

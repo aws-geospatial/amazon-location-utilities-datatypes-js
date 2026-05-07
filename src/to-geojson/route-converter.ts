@@ -274,7 +274,7 @@ function convertRouteToFeature(
   route: CalculateRouteResponse,
   options?: { flattenProperties?: boolean },
 ): Feature<MultiLineString> {
-  const processedLegs = route.Legs.map((leg) => leg.Geometry?.LineString).filter((leg) => leg);
+  const processedLegs = (route.Legs?.map((leg) => leg.Geometry?.LineString) || []).filter((leg) => leg);
   let properties: Record<string, unknown> = {};
   if (options?.flattenProperties) {
     properties = flattenProperties(route.Summary, "");

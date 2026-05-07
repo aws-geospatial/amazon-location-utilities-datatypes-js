@@ -23,7 +23,7 @@
     "Raymond Lee <imraylee@amazon.com>"
   ],
   "engines": {
-    "node": ">= 16.0.0"
+    "node": ">= 20.0.0"
   },
   "browser": "./dist/amazonLocationDataConverter.js",
   "main": "./dist/cjs/index.js",

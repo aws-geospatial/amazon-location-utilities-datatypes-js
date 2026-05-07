@@ -249,4 +249,30 @@ describe("devicePositionsToFeatureCollection", () => {
       } as BatchGetDevicePositionResponse),
     ).toEqual(emptyFeatureCollection());
   });
+
+  it("should handle undefined DevicePositions array gracefully", () => {
+    expect(
+      devicePositionsToFeatureCollection({
+        DevicePositions: undefined,
+      } as BatchGetDevicePositionResponse),
+    ).toEqual(emptyFeatureCollection());
+  });
+
+  it("should handle undefined Entries array gracefully", () => {
+    expect(
+      devicePositionsToFeatureCollection({
+        Entries: undefined,
+      } as ListDevicePositionsResponse),
+    ).toEqual(emptyFeatureCollection());
+  });
+
+  it("should handle device position without Position field gracefully", () => {
+    expect(
+      devicePositionsToFeatureCollection({
+        DeviceId: "test-device",
+        SampleTime: new Date("2023-04-18T21:33:44Z"),
+        Position: undefined,
+      } as GetDevicePositionResponse),
+    ).toEqual(emptyFeatureCollection());
+  });
 });
