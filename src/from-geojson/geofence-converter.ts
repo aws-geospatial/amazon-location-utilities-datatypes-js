@@ -3,6 +3,7 @@
 
 import { Feature, FeatureCollection, Polygon } from "geojson";
 import { BatchPutGeofenceRequestEntry } from "@aws-sdk/client-location";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * It converts a FeatureCollection with Polygon Features to an array of BatchPutGeofenceRequestEntry, so the result can
@@ -122,7 +123,7 @@ export function featureCollectionToGeofence(
 function convertFeatureToGeofence(feature: Feature<Polygon>): BatchPutGeofenceRequestEntry | undefined {
   if (feature && feature.geometry?.type == "Polygon") {
     // Generate UUID if feature.id is not provided
-    const geofenceId = feature.id ? String(feature.id) : crypto.randomUUID();
+    const geofenceId = feature.id ? String(feature.id) : uuidv4();
 
     if (feature.properties && "center" in feature.properties) {
       // Circular geofence

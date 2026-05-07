@@ -70,7 +70,8 @@
     "@aws-sdk/client-location": "^3.682.0",
     "@aws/polyline": "^0.1.4",
     "@turf/circle": "^6.5.0",
-    "@types/geojson": "^7946.0.14"
+    "@types/geojson": "^7946.0.14",
+    "uuid": "^11.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
@@ -81,6 +82,7 @@
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@turf/distance": "^6.5.0",
     "@types/jest": "^29.5.14",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.57.1",
