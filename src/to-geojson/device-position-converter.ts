@@ -201,10 +201,11 @@ export function devicePositionsToFeatureCollection(
     const features = [convertDevicePositionToFeature(devicePositions)];
     return toFeatureCollection(features);
   } else if ("DevicePositions" in devicePositions) {
-    const features = devicePositions.DevicePositions.map((result) => result && convertDevicePositionToFeature(result));
+    const features =
+      devicePositions.DevicePositions?.map((result) => result && convertDevicePositionToFeature(result)) || [];
     return toFeatureCollection(features);
   } else if ("Entries" in devicePositions) {
-    const features = devicePositions.Entries.map((result) => result && convertDevicePositionToFeature(result));
+    const features = devicePositions.Entries?.map((result) => result && convertDevicePositionToFeature(result)) || [];
     return toFeatureCollection(features);
   } else {
     return emptyFeatureCollection();
@@ -225,4 +226,5 @@ function convertDevicePositionToFeature(
       },
     };
   }
+  return null;
 }

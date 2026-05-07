@@ -89,4 +89,25 @@ describe("featureCollectionToGeofence", () => {
       },
     ]);
   });
+
+  it("should auto-generate UUID for features without id", () => {
+    const result = featureCollectionToGeofence({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "Polygon",
+            coordinates: polygon,
+          },
+        },
+      ],
+    } as FeatureCollection<Polygon>);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].Geometry.Polygon).toEqual(polygon);
+    // Verify GeofenceId is a valid UUID format
+    expect(result[0].GeofenceId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  });
 });

@@ -111,7 +111,8 @@ export function emptyFeatureCollection<T extends Geometry>(): FeatureCollection<
 
 export function convertGeometryToFeature(
   geometry?: GeofenceGeometry | LegGeometry | PlaceGeometry,
-  properties?,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  properties?: any,
 ): Feature<Point | Polygon | LineString> | undefined {
   if (geometry) {
     const [type, coordinates] =

@@ -120,4 +120,12 @@ describe("geofencesToFeatureCollection", () => {
       ]),
     );
   });
+
+  it("Should handle undefined Entries array gracefully", () => {
+    expect(
+      geofencesToFeatureCollection({
+        Entries: undefined,
+      } as ListGeofencesResponse),
+    ).toEqual(emptyFeatureCollection());
+  });
 });
