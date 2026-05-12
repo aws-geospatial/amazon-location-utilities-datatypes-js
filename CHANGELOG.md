@@ -1,5 +1,13 @@
 # Changes
 
+## 1.2.5
+
+### ✨ Features and improvements
+
+- Several dependency version updates
+
+- Use GitHub App token instead of GITHUB_TOKEN for auto-security-release PR creation
+
 ## 1.2.4
 
 ### 🐛 Bug Fixes
