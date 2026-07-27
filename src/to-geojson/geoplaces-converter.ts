@@ -41,7 +41,6 @@ const defaultBaseGeoPlacesOptions = {
  */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GetPlaceResponseOptions extends BaseGeoPlacesOptions {}
 const defaultGetPlaceResponseOptions = defaultBaseGeoPlacesOptions;
 
@@ -104,7 +103,6 @@ export function getPlaceResponseToFeatureCollection(
 /** Options for converting a GeocodeResponse to a GeoJSON FeatureCollection. */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface GeocodeResponseOptions extends BaseGeoPlacesOptions {}
 const defaultGeocodeResponseOptions = defaultBaseGeoPlacesOptions;
 
@@ -169,7 +167,6 @@ export function geocodeResponseToFeatureCollection(
 /** Options for converting a ReverseGeocodeResponse to a GeoJSON FeatureCollection. */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ReverseGeocodeResponseOptions extends BaseGeoPlacesOptions {}
 const defaultReverseGeocodeResponseOptions = defaultBaseGeoPlacesOptions;
 
@@ -234,7 +231,6 @@ export function reverseGeocodeResponseToFeatureCollection(
 /** Options for converting a GetPlaceResponse to a GeoJSON FeatureCollection. */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SearchNearbyResponseOptions extends BaseGeoPlacesOptions {}
 const defaultSearchNearbyResponseOptions = defaultBaseGeoPlacesOptions;
 
@@ -299,7 +295,6 @@ export function searchNearbyResponseToFeatureCollection(
 /** Options for converting a GetPlaceResponse to a GeoJSON FeatureCollection. */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SearchTextResponseOptions extends BaseGeoPlacesOptions {}
 const defaultSearchTextResponseOptions = defaultBaseGeoPlacesOptions;
 
@@ -364,7 +359,6 @@ export function searchTextResponseToFeatureCollection(
 /** Options for converting a GetPlaceResponse to a GeoJSON FeatureCollection. */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SuggestResponseOptions extends BaseGeoPlacesOptions {}
 const defaultSuggestResponseOptions = defaultBaseGeoPlacesOptions;
 
