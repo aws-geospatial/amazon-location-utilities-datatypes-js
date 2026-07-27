@@ -336,7 +336,6 @@ export function calculateRoutesResponseToFeatureCollections(
 /** Options for converting a CalculateIsolinesResponseOptions to a GeoJSON FeatureCollection. */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface CalculateIsolinesResponseOptions extends BaseGeoRoutesOptions {}
 const defaultCalculateIsolinesResponseOptions = defaultBaseGeoRoutesOptions;
 
@@ -472,7 +471,6 @@ export function calculateIsolinesResponseToFeatureCollection(
 /** Options for converting an OptimizeWaypointsResponse to a GeoJSON FeatureCollection. */
 // While we currently don't have any members, we expose it as an interface instead of a type
 // so that the generated typedoc has the base options listed for it.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OptimizeWaypointsResponseOptions extends BaseGeoRoutesOptions {}
 const defaultOptimizeWaypointsResponseOptions = defaultBaseGeoRoutesOptions;
 
