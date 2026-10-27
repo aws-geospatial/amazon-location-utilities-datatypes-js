@@ -84,7 +84,7 @@
     "@turf/distance": "^6.5.0",
     "@types/node": "^20.19.43",
     "@types/uuid": "^10.0.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^10.8.0",
     "husky": "^8.0.3",
     "jiti": "^2.7.0",
@@ -96,6 +96,6 @@
     "typedoc": "^0.28.20",
     "typescript": "^5.1.6",
     "typescript-eslint": "^8.65.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.12"
   }
 }
